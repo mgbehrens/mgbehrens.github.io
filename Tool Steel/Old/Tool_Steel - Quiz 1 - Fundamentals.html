@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Template</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz 1: Tool Steels - Fundamentals (20 questions)</h1>
+    <p class="muted">Tests foundational knowledge of tool steel types, properties, heat treatment, and common applications, focusing on recognition and basic understanding.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+  const QUESTIONS = [
+  {
+    topic: "Tool Steel Basics",
+    question: "What is the primary purpose of tool steels?",
+    choices: [
+      "Structural support in buildings",
+      "Electrical conductivity",
+      "Cutting, forming, and shaping other materials",
+      "Corrosion resistance in marine environments"
+    ],
+    correctIndex: 2,
+    explanation: "Tool steels are designed for cutting, forming, and shaping due to their hardness and wear resistance."
+  },
+  {
+    topic: "Composition",
+    question: "Which element is most responsible for hardness in tool steels?",
+    choices: ["Nickel", "Carbon", "Silicon", "Aluminium"],
+    correctIndex: 1,
+    explanation: "Carbon increases hardness and strength by enabling martensite formation and carbide precipitation."
+  },
+  {
+    topic: "Classification",
+    question: "What does the letter 'W' represent in W-type tool steels?",
+    choices: [
+      "Wear resistant",
+      "Water hardened",
+      "Work hardened",
+      "Wrought steel"
+    ],
+    correctIndex: 1,
+    explanation: "W-type tool steels are water-hardening steels with relatively high carbon content."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "Why are tool steels commonly heat treated?",
+    choices: [
+      "To reduce density",
+      "To improve machinability only",
+      "To achieve required hardness and toughness",
+      "To prevent oxidation"
+    ],
+    correctIndex: 2,
+    explanation: "Heat treatment develops the microstructure needed for hardness, toughness, and wear resistance."
+  },
+  {
+    topic: "Cold Work Tool Steels",
+    question: "Which tool steel type is typically used for punches and dies at room temperature?",
+    choices: ["H-type", "D-type", "M-type", "P-type"],
+    correctIndex: 1,
+    explanation: "D-type tool steels are high-carbon, high-chromium cold-work steels with excellent wear resistance."
+  },
+  {
+    topic: "Hot Work Tool Steels",
+    question: "Hot-working tool steels are designed to resist:",
+    choices: [
+      "Electrical arcing",
+      "High-temperature softening",
+      "Corrosion in acids",
+      "Magnetic fields"
+    ],
+    correctIndex: 1,
+    explanation: "Hot-work steels retain strength and hardness at elevated temperatures."
+  },
+  {
+    topic: "High Speed Steel",
+    question: "What does HSS stand for?",
+    choices: [
+      "High Strength Steel",
+      "High Surface Steel",
+      "High Speed Steel",
+      "Hardened Structural Steel"
+    ],
+    correctIndex: 2,
+    explanation: "High Speed Steel is designed to cut at high speeds while retaining hardness."
+  },
+  {
+    topic: "Alloying Elements",
+    question: "Which element improves red hardness in high-speed steels?",
+    choices: ["Copper", "Tungsten", "Sulphur", "Phosphorus"],
+    correctIndex: 1,
+    explanation: "Tungsten improves hot hardness, allowing tools to retain cutting ability at high temperatures."
+  },
+  {
+    topic: "Microstructure",
+    question: "Which microstructure is primarily responsible for hardness in tool steels?",
+    choices: ["Ferrite", "Austenite", "Martensite", "Pearlite"],
+    correctIndex: 2,
+    explanation: "Martensite is a hard, supersaturated phase formed during rapid cooling."
+  },
+  {
+    topic: "Machinability",
+    question: "Why are some tool steels difficult to machine in the hardened condition?",
+    choices: [
+      "Low density",
+      "High ductility",
+      "High hardness and carbide content",
+      "Excessive thermal expansion"
+    ],
+    correctIndex: 2,
+    explanation: "High hardness and hard carbides significantly reduce machinability."
+  },
+  {
+    topic: "Wear Resistance",
+    question: "Which property is most critical for blanking and stamping dies?",
+    choices: [
+      "Electrical conductivity",
+      "Wear resistance",
+      "Low melting point",
+      "High corrosion resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Blanking and stamping involve repeated contact, requiring high wear resistance."
+  },
+  {
+    topic: "Toughness",
+    question: "Why is toughness important in tool steels?",
+    choices: [
+      "To allow plastic deformation during use",
+      "To prevent brittle fracture under impact",
+      "To improve corrosion resistance",
+      "To reduce tool weight"
+    ],
+    correctIndex: 1,
+    explanation: "Adequate toughness prevents cracking or catastrophic failure."
+  },
+  {
+    topic: "Surface Condition",
+    question: "What does 'decarb-free' tool steel indicate?",
+    choices: [
+      "No alloying elements present",
+      "Surface has not lost carbon",
+      "Steel has not been quenched",
+      "Steel is fully annealed"
+    ],
+    correctIndex: 1,
+    explanation: "Decarburisation reduces surface hardness, so decarb-free steel maintains performance."
+  },
+  {
+    topic: "Applications",
+    question: "Which tool steel is commonly used for injection moulds?",
+    choices: ["P-type", "W-type", "T-type", "S-type"],
+    correctIndex: 0,
+    explanation: "P-type steels are designed for plastic moulding applications."
+  },
+  {
+    topic: "Shock Resistance",
+    question: "Which tool steel group is designed to resist impact loading?",
+    choices: ["D-type", "S-type", "T-type", "L-type"],
+    correctIndex: 1,
+    explanation: "S-type steels offer high toughness and shock resistance."
+  },
+  {
+    topic: "Alloy Content",
+    question: "High chromium content in tool steels mainly improves:",
+    choices: [
+      "Electrical conductivity",
+      "Wear resistance",
+      "Thermal expansion",
+      "Magnetic permeability"
+    ],
+    correctIndex: 1,
+    explanation: "Chromium forms hard carbides, significantly improving wear resistance."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "Why are some tool steels oil hardened instead of water hardened?",
+    choices: [
+      "Oil is cheaper",
+      "Oil cools faster",
+      "Oil reduces cracking and distortion",
+      "Oil increases surface hardness"
+    ],
+    correctIndex: 2,
+    explanation: "Oil quenching is less severe and reduces thermal shock."
+  },
+  {
+    topic: "Failure Modes",
+    question: "What is the most common failure mode of poorly selected tool steel?",
+    choices: [
+      "Electrical short circuit",
+      "Corrosion fatigue",
+      "Excessive wear or brittle fracture",
+      "Thermal expansion"
+    ],
+    correctIndex: 2,
+    explanation: "Incorrect selection often leads to wear or brittle failure."
+  },
+  {
+    topic: "Manufacturing",
+    question: "Why are tool steels often supplied in the annealed condition?",
+    choices: [
+      "To maximise hardness",
+      "To improve machinability before heat treatment",
+      "To prevent oxidation",
+      "To eliminate carbides"
+    ],
+    correctIndex: 1,
+    explanation: "Annealed condition allows easier machining prior to final heat treatment."
+  },
+  {
+    topic: "Selection",
+    question: "When selecting a tool steel, which factor is MOST important?",
+    choices: [
+      "Colour of the steel",
+      "Cost only",
+      "Service conditions and application",
+      "Supplier location"
+    ],
+    correctIndex: 2,
+    explanation: "Tool steel selection must match loading, temperature, wear, and impact conditions."
+  }
+];
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

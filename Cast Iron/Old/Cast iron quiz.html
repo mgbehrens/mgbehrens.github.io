@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cast Iron Quiz - Types, Microstructure & Applications (20 Questions)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses students’ understanding of cast iron composition, graphite forms, microstructures, and the differences between grey, white, malleable, ductile, and compacted graphite irons, linking alloying elements and cooling rates to mechanical properties and typical engineering applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+
+const QUESTIONS = [
+  {
+    topic: "Definition",
+    question: "What distinguishes cast iron from steel in terms of composition?",
+    choices: [
+      "Lower carbon content",
+      "Higher carbon content, typically above 2%",
+      "Presence of chromium",
+      "Presence of nickel"
+    ],
+    correctIndex: 1,
+    explanation: "Cast irons contain a high carbon content (typically 2–4%), which promotes graphite or carbide formation during solidification. This high carbon level is the key distinction from steels."
+  },
+  {
+    topic: "Carbon Form",
+    question: "In most cast irons, carbon exists primarily in which form?",
+    choices: [
+      "Dissolved in ferrite",
+      "As graphite or iron carbide",
+      "As martensite",
+      "As a surface oxide"
+    ],
+    correctIndex: 1,
+    explanation: "Carbon in cast iron exists either as free graphite (flakes, nodules, or compacted shapes) or combined as iron carbide (cementite), depending on composition and cooling rate."
+  },
+  {
+    topic: "Grey Cast Iron",
+    question: "What microstructural feature gives grey cast iron its name?",
+    choices: [
+      "Ferrite matrix",
+      "Pearlite matrix",
+      "Graphite flakes",
+      "Iron carbides"
+    ],
+    correctIndex: 2,
+    explanation: "Grey cast iron contains graphite in the form of flakes. These flakes give the fracture surface a grey appearance and strongly influence mechanical behaviour."
+  },
+  {
+    topic: "Grey Cast Iron Properties",
+    question: "Which property is characteristic of grey cast iron?",
+    choices: [
+      "High ductility",
+      "Excellent vibration damping",
+      "High tensile strength",
+      "Good impact resistance"
+    ],
+    correctIndex: 1,
+    explanation: "The graphite flakes in grey cast iron absorb vibration and sound, making it ideal for machine bases, engine blocks, and housings."
+  },
+  {
+    topic: "Flake Graphite",
+    question: "Why does grey cast iron have low tensile strength?",
+    choices: [
+      "Low carbon content",
+      "Presence of martensite",
+      "Graphite flakes act as stress concentrators",
+      "Large grain size"
+    ],
+    correctIndex: 2,
+    explanation: "Graphite flakes have sharp edges that concentrate stress, making grey cast iron brittle under tensile loading."
+  },
+  {
+    topic: "White Cast Iron",
+    question: "Why does white cast iron appear white on fracture surfaces?",
+    choices: [
+      "Presence of ferrite",
+      "Presence of pearlite",
+      "Carbon is present as cementite",
+      "Surface oxidation"
+    ],
+    correctIndex: 2,
+    explanation: "In white cast iron, carbon is locked into iron carbide (cementite), which produces a hard, white fracture surface."
+  },
+  {
+    topic: "White Cast Iron Properties",
+    question: "Which property best describes white cast iron?",
+    choices: [
+      "Highly ductile",
+      "Easily machinable",
+      "Extremely hard and wear resistant",
+      "Excellent vibration damping"
+    ],
+    correctIndex: 2,
+    explanation: "White cast iron is extremely hard and brittle due to its carbide-rich microstructure, making it suitable for wear-resistant applications."
+  },
+  {
+    topic: "Malleable Cast Iron",
+    question: "How is malleable cast iron produced?",
+    choices: [
+      "Rapid quenching of grey iron",
+      "Annealing white cast iron",
+      "Adding magnesium to molten iron",
+      "Cold working grey iron"
+    ],
+    correctIndex: 1,
+    explanation: "Malleable cast iron is produced by heat treating white cast iron to break down cementite into temper carbon nodules."
+  },
+  {
+    topic: "Malleable Iron Properties",
+    question: "Which property is improved in malleable cast iron compared to grey iron?",
+    choices: [
+      "Wear resistance",
+      "Hardness",
+      "Ductility and toughness",
+      "Thermal conductivity"
+    ],
+    correctIndex: 2,
+    explanation: "The temper carbon nodules reduce stress concentration, improving ductility and toughness."
+  },
+  {
+    topic: "Ductile Cast Iron",
+    question: "What alloying element is added to produce ductile (nodular) cast iron?",
+    choices: ["Silicon", "Chromium", "Magnesium", "Nickel"],
+    correctIndex: 2,
+    explanation: "Magnesium modifies graphite morphology, causing carbon to form as spheroidal nodules rather than flakes."
+  },
+  {
+    topic: "Graphite Shape",
+    question: "Why does nodular graphite improve mechanical properties?",
+    choices: [
+      "It increases carbon content",
+      "It reduces stress concentration",
+      "It increases hardness",
+      "It promotes carbide formation"
+    ],
+    correctIndex: 1,
+    explanation: "Spherical graphite nodules reduce stress concentration, greatly improving tensile strength, ductility, and fatigue resistance."
+  },
+  {
+    topic: "Ductile Iron Applications",
+    question: "Which application commonly uses ductile cast iron?",
+    choices: [
+      "Machine tool bases",
+      "Wear plates",
+      "Pressure pipes and fittings",
+      "Cutting tools"
+    ],
+    correctIndex: 2,
+    explanation: "Ductile cast iron combines strength and toughness, making it suitable for pressure-containing components such as pipes."
+  },
+  {
+    topic: "Compacted Graphite Iron (CGI)",
+    question: "How does compacted graphite iron compare to grey iron?",
+    choices: [
+      "Lower strength",
+      "Higher ductility",
+      "Higher strength and stiffness",
+      "Lower thermal conductivity"
+    ],
+    correctIndex: 2,
+    explanation: "CGI has worm-like graphite shapes that provide higher strength and stiffness than grey iron while retaining good damping."
+  },
+  {
+    topic: "Alloying Elements",
+    question: "What is the primary role of silicon in cast iron?",
+    choices: [
+      "Promote graphite formation",
+      "Increase hardness",
+      "Promote martensite",
+      "Reduce carbon content"
+    ],
+    correctIndex: 0,
+    explanation: "Silicon is a strong graphitiser, encouraging carbon to form as graphite rather than cementite."
+  },
+  {
+    topic: "Chromium in Cast Iron",
+    question: "What effect does chromium have when added to cast iron?",
+    choices: [
+      "Promotes graphite",
+      "Increases carbide formation and wear resistance",
+      "Improves machinability",
+      "Reduces hardness"
+    ],
+    correctIndex: 1,
+    explanation: "Chromium stabilises carbides, increasing hardness and wear resistance in white and alloyed cast irons."
+  },
+  {
+    topic: "Cooling Rate",
+    question: "How does a fast cooling rate affect cast iron microstructure?",
+    choices: [
+      "Promotes graphite formation",
+      "Promotes ferrite formation",
+      "Promotes carbide (white iron) formation",
+      "Eliminates carbon"
+    ],
+    correctIndex: 2,
+    explanation: "Rapid cooling suppresses graphite formation, causing carbon to remain combined as cementite."
+  },
+  {
+    topic: "Machinability",
+    question: "Why is grey cast iron easy to machine?",
+    choices: [
+      "Low hardness",
+      "Graphite flakes act as chip breakers and lubricants",
+      "Low carbon content",
+      "Fine grain size"
+    ],
+    correctIndex: 1,
+    explanation: "Graphite flakes reduce cutting forces and improve tool life, making grey iron highly machinable."
+  },
+  {
+    topic: "Mechanical Behaviour",
+    question: "Which cast iron type has the highest toughness?",
+    choices: [
+      "Grey cast iron",
+      "White cast iron",
+      "Ductile cast iron",
+      "Chilled cast iron"
+    ],
+    correctIndex: 2,
+    explanation: "Ductile cast iron has nodular graphite, which minimises stress concentration and improves toughness."
+  },
+  {
+    topic: "Thermal Properties",
+    question: "Which cast iron property makes it suitable for engine blocks?",
+    choices: [
+      "High hardness",
+      "High ductility",
+      "Good thermal conductivity and vibration damping",
+      "Low density"
+    ],
+    correctIndex: 2,
+    explanation: "Grey and CGI irons provide good heat dissipation and vibration damping, ideal for engine blocks."
+  },
+  {
+    topic: "Material Selection",
+    question: "Why would cast iron be selected over steel for many machine components?",
+    choices: [
+      "Higher tensile strength",
+      "Lower melting temperature and excellent castability",
+      "Higher corrosion resistance",
+      "Greater ductility"
+    ],
+    correctIndex: 1,
+    explanation: "Cast iron melts at lower temperatures and flows well into complex moulds, making it economical for complex shapes."
+  }
+];
+
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

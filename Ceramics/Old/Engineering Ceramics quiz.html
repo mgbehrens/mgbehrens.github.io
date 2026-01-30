@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Engineering Ceramics Quiz (20 questions)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses students’ understanding of engineering ceramics, including atomic bonding, microstructure, mechanical and thermal behaviour, processing methods, limitations such as brittleness and thermal shock, and the selection of common ceramic materials for high-temperature, wear-resistant, and chemically aggressive applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Definition",
+    question: "What best defines an engineering ceramic?",
+    choices: [
+      "A metallic material with high hardness",
+      "An inorganic, non-metallic material with ionic or covalent bonding",
+      "A polymer reinforced with fibres",
+      "A heat-treated steel"
+    ],
+    correctIndex: 1,
+    explanation: "Engineering ceramics are inorganic, non-metallic materials typically bonded by ionic and/or covalent bonds. These strong bonds give ceramics high hardness, stiffness, and temperature resistance, but also contribute to their brittleness."
+  },
+  {
+    topic: "Atomic Bonding",
+    question: "Why do ceramics generally have high hardness and melting temperatures?",
+    choices: [
+      "They have large grain sizes",
+      "They are amorphous",
+      "They are held together by strong ionic and covalent bonds",
+      "They contain alloying elements"
+    ],
+    correctIndex: 2,
+    explanation: "Ionic and covalent bonds are very strong and directional, requiring large amounts of energy to break. This leads to high hardness, high melting temperatures, and excellent thermal stability."
+  },
+  {
+    topic: "Mechanical Behaviour",
+    question: "Why are most engineering ceramics brittle at room temperature?",
+    choices: [
+      "They have low hardness",
+      "They lack effective slip systems for plastic deformation",
+      "They contain high carbon",
+      "They have low elastic modulus"
+    ],
+    correctIndex: 1,
+    explanation: "Ceramics lack mobile dislocations and slip systems, so they cannot plastically deform to relieve stress. As a result, cracks propagate easily, leading to brittle fracture."
+  },
+  {
+    topic: "Strength in Compression",
+    question: "Compared to tensile strength, ceramic materials typically have:",
+    choices: [
+      "Lower compressive strength",
+      "Similar tensile and compressive strength",
+      "Much higher compressive strength",
+      "No compressive strength"
+    ],
+    correctIndex: 2,
+    explanation: "Ceramics are very strong in compression because compressive loading tends to close cracks rather than open them, unlike tensile loading which promotes crack growth."
+  },
+  {
+    topic: "Elastic Modulus",
+    question: "How does the elastic modulus of ceramics compare to metals?",
+    choices: [
+      "Much lower",
+      "Similar",
+      "Much higher",
+      "Zero"
+    ],
+    correctIndex: 2,
+    explanation: "Ceramics typically have a higher elastic modulus than metals, meaning they are stiffer and deform less elastically under load."
+  },
+  {
+    topic: "Thermal Properties",
+    question: "Which thermal property is characteristic of most engineering ceramics?",
+    choices: [
+      "High thermal expansion",
+      "Low melting temperature",
+      "Low thermal conductivity and good thermal insulation",
+      "High ductility at high temperature"
+    ],
+    correctIndex: 2,
+    explanation: "Many ceramics have low thermal conductivity and are used as thermal insulators, though some specialised ceramics (e.g. SiC, AlN) have high thermal conductivity."
+  },
+  {
+    topic: "Thermal Shock",
+    question: "Why are ceramics susceptible to thermal shock?",
+    choices: [
+      "They melt easily",
+      "They have low hardness",
+      "They have low fracture toughness and limited ability to relieve thermal stresses",
+      "They oxidise rapidly"
+    ],
+    correctIndex: 2,
+    explanation: "Rapid temperature changes create thermal stresses. Because ceramics cannot plastically deform and have low fracture toughness, these stresses can cause cracking."
+  },
+  {
+    topic: "Electrical Properties",
+    question: "Most engineering ceramics are:",
+    choices: [
+      "Good electrical conductors",
+      "Semiconductors only",
+      "Electrical insulators",
+      "Superconductors"
+    ],
+    correctIndex: 2,
+    explanation: "Most ceramics are electrical insulators due to the absence of free electrons. Some specialised ceramics are semiconductors or ionic conductors."
+  },
+  {
+    topic: "Alumina (Al₂O₃)",
+    question: "Which property makes alumina (Al₂O₃) one of the most widely used engineering ceramics?",
+    choices: [
+      "Low cost, good hardness, and excellent wear resistance",
+      "High ductility",
+      "Electrical conductivity",
+      "Ability to be welded"
+    ],
+    correctIndex: 0,
+    explanation: "Alumina offers a good balance of hardness, wear resistance, chemical stability, and cost, making it widely used in bearings, seals, and electrical insulators."
+  },
+  {
+    topic: "Silicon Carbide (SiC)",
+    question: "Which application best suits silicon carbide?",
+    choices: [
+      "Structural beams",
+      "High-temperature furnace elements and abrasives",
+      "Electrical wiring",
+      "Low-stress housings"
+    ],
+    correctIndex: 1,
+    explanation: "Silicon carbide has exceptional hardness, high-temperature strength, and thermal conductivity, making it ideal for abrasives, furnace components, and wear parts."
+  },
+  {
+    topic: "Silicon Nitride (Si₃N₄)",
+    question: "Why is silicon nitride used in high-speed bearings?",
+    choices: [
+      "Low hardness",
+      "High density",
+      "High fracture toughness for a ceramic and good thermal shock resistance",
+      "Low cost"
+    ],
+    correctIndex: 2,
+    explanation: "Silicon nitride combines relatively high fracture toughness with low density and good thermal shock resistance, making it suitable for demanding bearing applications."
+  },
+  {
+    topic: "Zirconia (ZrO₂)",
+    question: "What unique toughening mechanism is associated with zirconia?",
+    choices: [
+      "Grain boundary sliding",
+      "Transformation toughening",
+      "Solid solution strengthening",
+      "Work hardening"
+    ],
+    correctIndex: 1,
+    explanation: "Zirconia undergoes a stress-induced phase transformation that absorbs energy and helps blunt cracks, significantly increasing fracture toughness."
+  },
+  {
+    topic: "Fracture Toughness",
+    question: "Compared to metals, ceramics generally have:",
+    choices: [
+      "Higher fracture toughness",
+      "Similar fracture toughness",
+      "Lower fracture toughness",
+      "Infinite fracture toughness"
+    ],
+    correctIndex: 2,
+    explanation: "Ceramics have much lower fracture toughness than metals, meaning they are more sensitive to flaws and cracks."
+  },
+  {
+    topic: "Processing",
+    question: "Which manufacturing process is most commonly used to shape engineering ceramics?",
+    choices: [
+      "Casting and welding",
+      "Forging",
+      "Powder processing followed by sintering",
+      "Hot rolling"
+    ],
+    correctIndex: 2,
+    explanation: "Ceramics are typically formed from powders and densified by sintering, as they cannot be plastically deformed like metals."
+  },
+  {
+    topic: "Porosity",
+    question: "Why is porosity undesirable in engineering ceramics?",
+    choices: [
+      "It increases ductility",
+      "It improves thermal conductivity",
+      "It reduces strength and fracture toughness",
+      "It reduces density only"
+    ],
+    correctIndex: 2,
+    explanation: "Pores act as stress concentrators and crack initiation sites, significantly reducing strength and reliability."
+  },
+  {
+    topic: "Wear Resistance",
+    question: "Why do ceramics often outperform metals in abrasive wear applications?",
+    choices: [
+      "They are softer",
+      "They form lubricating oxides",
+      "Their high hardness resists abrasive particle penetration",
+      "They plastically deform easily"
+    ],
+    correctIndex: 2,
+    explanation: "The very high hardness of ceramics prevents abrasive particles from cutting or ploughing into the surface."
+  },
+  {
+    topic: "Chemical Stability",
+    question: "Which environment are ceramics particularly well suited for?",
+    choices: [
+      "High-impact environments",
+      "Corrosive and chemically aggressive environments",
+      "Applications requiring ductility",
+      "High-fatigue cyclic loading"
+    ],
+    correctIndex: 1,
+    explanation: "Ceramics are chemically inert and resistant to corrosion, making them ideal for harsh chemical environments."
+  },
+  {
+    topic: "Design Limitation",
+    question: "What is the biggest design limitation when using engineering ceramics?",
+    choices: [
+      "Low hardness",
+      "High density",
+      "Brittle failure without warning",
+      "Poor temperature resistance"
+    ],
+    correctIndex: 2,
+    explanation: "Ceramics fail in a brittle manner with little plastic deformation, requiring conservative design and careful flaw control."
+  },
+  {
+    topic: "Ceramic Matrix Composites",
+    question: "Why are ceramic matrix composites (CMCs) developed?",
+    choices: [
+      "To increase electrical conductivity",
+      "To improve toughness and damage tolerance",
+      "To reduce melting temperature",
+      "To increase porosity"
+    ],
+    correctIndex: 1,
+    explanation: "CMCs incorporate fibres or reinforcements that help arrest crack growth, improving toughness and damage tolerance compared to monolithic ceramics."
+  },
+  {
+    topic: "Material Selection",
+    question: "When is an engineering ceramic MOST appropriate compared to a metal?",
+    choices: [
+      "When high ductility is required",
+      "When impact loading is dominant",
+      "When high temperature, wear, or corrosion resistance is required",
+      "When easy machining is required"
+    ],
+    correctIndex: 2,
+    explanation: "Ceramics excel in high-temperature, high-wear, and corrosive environments where metals may soften or degrade."
+  }
+];
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

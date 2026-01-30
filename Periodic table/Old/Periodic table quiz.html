@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Periodic Table Quiz - 20 Questions</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses students’ understanding of the structure of the periodic table, atomic structure, groups and periods, periodic trends, and the relevance of different element types to engineering and materials applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Periodic Table Structure",
+    question: "What does the atomic number of an element represent?",
+    choices: [
+      "The number of neutrons in the atom",
+      "The total number of protons and neutrons",
+      "The number of protons in the nucleus",
+      "The atomic mass of the element"
+    ],
+    correctIndex: 2,
+    explanation: "The atomic number is defined as the number of protons in the nucleus of an atom. This number uniquely identifies the element and determines its position in the periodic table."
+  },
+  {
+    topic: "Atomic Structure",
+    question: "Which subatomic particle has a negligible mass compared to protons and neutrons?",
+    choices: ["Proton", "Neutron", "Electron", "Nucleus"],
+    correctIndex: 2,
+    explanation: "Electrons have a very small mass compared to protons and neutrons, but they play a critical role in chemical bonding and electrical behaviour."
+  },
+  {
+    topic: "Groups and Periods",
+    question: "What do elements in the same vertical column (group) have in common?",
+    choices: [
+      "The same atomic mass",
+      "The same number of electron shells",
+      "Similar chemical properties due to valence electrons",
+      "The same density"
+    ],
+    correctIndex: 2,
+    explanation: "Elements in the same group have the same number of valence electrons, giving them similar chemical properties."
+  },
+  {
+    topic: "Periods",
+    question: "What does a horizontal row (period) in the periodic table indicate?",
+    choices: [
+      "The number of valence electrons",
+      "The number of electron shells",
+      "The atomic mass trend",
+      "The element category"
+    ],
+    correctIndex: 1,
+    explanation: "Elements in the same period have the same number of electron shells, with properties changing across the row."
+  },
+  {
+    topic: "Metals and Non-metals",
+    question: "Which of the following elements is a non-metal?",
+    choices: ["Iron (Fe)", "Aluminium (Al)", "Oxygen (O)", "Copper (Cu)"],
+    correctIndex: 2,
+    explanation: "Oxygen is a non-metal. Non-metals are generally poor conductors and tend to gain electrons during chemical reactions."
+  },
+  {
+    topic: "Alkali Metals",
+    question: "Which property is characteristic of alkali metals (Group 1)?",
+    choices: [
+      "Very high melting points",
+      "Low reactivity",
+      "High density",
+      "High reactivity with water"
+    ],
+    correctIndex: 3,
+    explanation: "Alkali metals have one valence electron, making them highly reactive, especially with water."
+  },
+  {
+    topic: "Alkaline Earth Metals",
+    question: "Which group contains the alkaline earth metals?",
+    choices: ["Group 1", "Group 2", "Group 17", "Group 18"],
+    correctIndex: 1,
+    explanation: "Group 2 elements are known as alkaline earth metals and have two valence electrons."
+  },
+  {
+    topic: "Halogens",
+    question: "Which property best describes halogens (Group 17)?",
+    choices: [
+      "Inert and unreactive",
+      "Highly reactive non-metals",
+      "Good electrical conductors",
+      "High melting metals"
+    ],
+    correctIndex: 1,
+    explanation: "Halogens are highly reactive non-metals that readily gain one electron to form negative ions."
+  },
+  {
+    topic: "Noble Gases",
+    question: "Why are noble gases generally unreactive?",
+    choices: [
+      "They have high atomic mass",
+      "They have filled valence shells",
+      "They are radioactive",
+      "They easily lose electrons"
+    ],
+    correctIndex: 1,
+    explanation: "Noble gases have full outer electron shells, making them chemically stable and largely unreactive."
+  },
+  {
+    topic: "Periodic Trends",
+    question: "Across a period from left to right, atomic radius generally:",
+    choices: [
+      "Increases",
+      "Decreases",
+      "Remains constant",
+      "Changes randomly"
+    ],
+    correctIndex: 1,
+    explanation: "As nuclear charge increases across a period, electrons are pulled closer to the nucleus, decreasing atomic radius."
+  },
+  {
+    topic: "Electronegativity",
+    question: "Which element is the most electronegative?",
+    choices: ["Oxygen", "Nitrogen", "Fluorine", "Chlorine"],
+    correctIndex: 2,
+    explanation: "Fluorine has the highest electronegativity, meaning it strongly attracts electrons in a chemical bond."
+  },
+  {
+    topic: "Ion Formation",
+    question: "What happens when a metal atom forms a positive ion?",
+    choices: [
+      "It gains electrons",
+      "It loses electrons",
+      "It gains protons",
+      "It loses neutrons"
+    ],
+    correctIndex: 1,
+    explanation: "Metals form positive ions (cations) by losing electrons to achieve a more stable electron configuration."
+  },
+  {
+    topic: "Transition Metals",
+    question: "Which feature is characteristic of transition metals?",
+    choices: [
+      "Low melting points",
+      "Poor electrical conductivity",
+      "Variable oxidation states",
+      "Filled outer shells"
+    ],
+    correctIndex: 2,
+    explanation: "Transition metals commonly exhibit variable oxidation states due to partially filled d-orbitals."
+  },
+  {
+    topic: "Periodic Blocks",
+    question: "Which block of the periodic table contains most metals used in engineering?",
+    choices: ["s-block", "p-block", "d-block", "f-block"],
+    correctIndex: 2,
+    explanation: "The d-block contains transition metals such as iron, copper, and nickel, which are widely used in engineering."
+  },
+  {
+    topic: "Lanthanides & Actinides",
+    question: "Where are the lanthanides typically located on the periodic table?",
+    choices: [
+      "At the top",
+      "In Group 1",
+      "In a separate row below the main table",
+      "In Group 18"
+    ],
+    correctIndex: 2,
+    explanation: "Lanthanides are shown in a separate row to keep the table compact, but they belong in Period 6."
+  },
+  {
+    topic: "Atomic Mass",
+    question: "Why is atomic mass usually not a whole number?",
+    choices: [
+      "Measurement error",
+      "Presence of isotopes",
+      "Electron mass variation",
+      "Proton instability"
+    ],
+    correctIndex: 1,
+    explanation: "Atomic mass is a weighted average of an element’s naturally occurring isotopes."
+  },
+  {
+    topic: "Reactivity Trends",
+    question: "Reactivity of alkali metals generally increases as you move:",
+    choices: [
+      "Up the group",
+      "Down the group",
+      "Across a period",
+      "Toward noble gases"
+    ],
+    correctIndex: 1,
+    explanation: "As atomic size increases down the group, the outer electron is more easily lost, increasing reactivity."
+  },
+  {
+    topic: "Periodic Classification",
+    question: "Elements that have properties of both metals and non-metals are called:",
+    choices: ["Metals", "Non-metals", "Metalloids", "Halogens"],
+    correctIndex: 2,
+    explanation: "Metalloids (such as silicon) exhibit a mix of metallic and non-metallic properties."
+  },
+  {
+    topic: "Chemical Bonding",
+    question: "Which type of element is most likely to form covalent bonds?",
+    choices: [
+      "Alkali metals",
+      "Transition metals",
+      "Non-metals",
+      "Noble gases"
+    ],
+    correctIndex: 2,
+    explanation: "Non-metals tend to share electrons, forming covalent bonds."
+  },
+  {
+    topic: "Engineering Context",
+    question: "Why are transition metals commonly used in engineering applications?",
+    choices: [
+      "They are always lightweight",
+      "They have low melting points",
+      "They offer strength, toughness, and good conductivity",
+      "They are non-reactive"
+    ],
+    correctIndex: 2,
+    explanation: "Transition metals combine mechanical strength, toughness, and useful electrical and thermal properties."
+  }
+];
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

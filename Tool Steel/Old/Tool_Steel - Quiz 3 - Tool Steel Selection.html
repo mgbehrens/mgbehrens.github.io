@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Template</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz 3: Tool Steel Selection - Scenario Based (Advanced Explanations)</h1>
+    <p class="muted">Builds on scenario-based selection by requiring reasoning linked to alloying elements, microstructure, and property trade-offs, reinforcing engineering judgement rather than memorisation.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+    const QUESTIONS = [
+  {
+    topic: "Cold Work – Wear",
+    question: "A blanking die is used at room temperature for high-volume sheet steel production. The primary failure mode is abrasive wear. Which tool steel is MOST appropriate?",
+    choices: ["H13", "D2", "S7", "W1"],
+    correctIndex: 1,
+    explanation: "D2 is a high-carbon (~1.5% C), high-chromium (~12% Cr) cold-work tool steel. The high carbon allows the formation of large volumes of hard carbides, while chromium forms chromium carbides (Cr7C3, Cr23C6), which significantly improve abrasive wear resistance. These carbides make D2 ideal for blanking and stamping dies where wear dominates. However, this same carbide content reduces toughness, which is acceptable here because impact loading is low."
+  },
+  {
+    topic: "Shock Loading",
+    question: "A hand-held chisel is subjected to repeated impact loading and occasional misuse. Which tool steel should be selected?",
+    choices: ["D2", "M2", "S7", "P20"],
+    correctIndex: 2,
+    explanation: "S7 is a shock-resistant tool steel with moderate carbon (~0.5% C) and alloying additions such as chromium, molybdenum, and silicon. These elements improve hardenability while maintaining a relatively low carbide volume. The reduced carbide content and refined grain structure give S7 excellent toughness and resistance to impact loading, making it ideal for chisels and punches that experience shock."
+  },
+  {
+    topic: "Hot Work",
+    question: "A die casting die operates at elevated temperatures and experiences repeated thermal cycling. Which tool steel is MOST suitable?",
+    choices: ["D2", "W1", "H13", "O1"],
+    correctIndex: 2,
+    explanation: "H13 is a chromium-molybdenum-vanadium hot-work tool steel. Chromium improves hardenability and oxidation resistance, molybdenum improves resistance to softening at high temperatures, and vanadium refines grain size and forms stable carbides. This alloy combination gives H13 excellent hot hardness, thermal fatigue resistance, and toughness, making it ideal for die casting and hot forging applications."
+  },
+  {
+    topic: "Machinability & Size",
+    question: "A large plastic injection mould requires good machinability, dimensional stability, and moderate hardness. Which tool steel is MOST appropriate?",
+    choices: ["P20", "M42", "D2", "T1"],
+    correctIndex: 0,
+    explanation: "P20 is a low-to-medium carbon (~0.3–0.4% C) chromium-molybdenum alloy steel supplied in the pre-hardened condition. Chromium improves hardenability and corrosion resistance, while molybdenum enhances toughness and reduces the risk of softening. The relatively low carbide content improves machinability and polishability, making P20 ideal for large plastic moulds."
+  },
+  {
+    topic: "High-Speed Cutting",
+    question: "A twist drill must maintain cutting ability at high speeds and elevated temperatures. Which tool steel should be selected?",
+    choices: ["O1", "H13", "M2", "S7"],
+    correctIndex: 2,
+    explanation: "M2 is a molybdenum-based high-speed steel containing carbon, molybdenum, tungsten, vanadium, and chromium. Tungsten and molybdenum provide red hardness, allowing the tool to retain hardness at elevated cutting temperatures. Vanadium forms extremely hard carbides that improve wear resistance, while chromium improves hardenability. This combination makes M2 ideal for high-speed cutting tools."
+  },
+  {
+    topic: "Cost & Simplicity",
+    question: "A simple woodworking tool requires good hardness but minimal alloying to keep costs low. Which tool steel is MOST suitable?",
+    choices: ["W1", "D2", "H13", "M2"],
+    correctIndex: 0,
+    explanation: "W1 is a plain carbon, water-hardening tool steel with minimal alloying elements. Its high carbon content allows it to achieve high hardness after quenching, while the lack of expensive alloying elements keeps costs low. However, it has limited hardenability and toughness, making it suitable only for simple tools and small cross-sections."
+  },
+  {
+    topic: "Dimensional Accuracy",
+    question: "A precision gauge requires minimal distortion during heat treatment and good wear resistance. Which tool steel is MOST appropriate?",
+    choices: ["O1", "D2", "W1", "S7"],
+    correctIndex: 1,
+    explanation: "D2 is an air-hardening tool steel with high chromium content, which significantly increases hardenability. Air hardening reduces quench severity, minimising distortion and cracking. The high carbide content also provides excellent wear resistance, making D2 suitable for precision gauges where dimensional stability is critical."
+  },
+  {
+    topic: "Thermal Fatigue",
+    question: "A forging die is exposed to repeated heating and cooling cycles and high compressive loads. Which tool steel should be selected?",
+    choices: ["H13", "P20", "O1", "W1"],
+    correctIndex: 0,
+    explanation: "H13 contains chromium, molybdenum, and vanadium, which together provide resistance to thermal fatigue, softening, and cracking at high temperatures. Molybdenum reduces temper softening, vanadium refines grain size, and chromium improves oxidation resistance. These properties are essential for forging dies exposed to cyclic thermal stress."
+  },
+  {
+    topic: "Toughness Priority",
+    question: "A punch is failing by chipping rather than uniform wear. Which change in tool steel selection is MOST appropriate?",
+    choices: [
+      "Switch from S7 to D2",
+      "Switch from D2 to S7",
+      "Switch from H13 to M2",
+      "Switch from P20 to W1"
+    ],
+    correctIndex: 1,
+    explanation: "Chipping indicates insufficient toughness. D2 has high carbide content, which increases wear resistance but reduces toughness. Switching to S7 reduces carbide volume and increases toughness due to its alloy balance and lower carbon content, making it more resistant to impact-related failures."
+  },
+  {
+    topic: "Plastic Moulding",
+    question: "A mould insert requires good polishability and resistance to moderate wear in plastic injection moulding. Which tool steel is MOST suitable?",
+    choices: ["P20", "S7", "W1", "T1"],
+    correctIndex: 0,
+    explanation: "P20’s relatively low carbon content and controlled alloying with chromium and molybdenum result in fewer and finer carbides. This improves polishability while still providing sufficient wear resistance. These properties are critical for plastic mould inserts where surface finish directly affects product quality."
+  }
+];
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

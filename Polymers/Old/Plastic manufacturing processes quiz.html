@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plastics Manufacturing Processes Quiz (20 Questions)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses students’ understanding of common plastic manufacturing processes—including injection moulding, extrusion, blow moulding, rotational moulding, calendaring, compression moulding, and thermoforming—focusing on process principles, material suitability, advantages, limitations, and typical engineering applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Injection Moulding",
+    question: "What is the primary advantage of injection moulding?",
+    choices: [
+      "Low tooling cost",
+      "High production rate and excellent dimensional accuracy",
+      "Ability to process thermosets only",
+      "Low processing pressure"
+    ],
+    correctIndex: 1,
+    explanation: "Injection moulding allows high-volume production of complex parts with tight tolerances and good surface finish, making it ideal for mass production."
+  },
+  {
+    topic: "Injection Moulding",
+    question: "Which type of polymer is MOST commonly processed by injection moulding?",
+    choices: ["Thermosets", "Thermoplastics", "Elastomers only", "Ceramics"],
+    correctIndex: 1,
+    explanation: "Thermoplastics soften when heated and solidify on cooling, allowing repeated melting and shaping in injection moulding."
+  },
+  {
+    topic: "Blow Moulding",
+    question: "Which product is typically manufactured using blow moulding?",
+    choices: ["Solid gears", "Plastic bottles", "Flat sheets", "High-pressure pipes"],
+    correctIndex: 1,
+    explanation: "Blow moulding is used to produce hollow plastic products such as bottles and containers."
+  },
+  {
+    topic: "Blow Moulding",
+    question: "What is the key forming mechanism in blow moulding?",
+    choices: [
+      "Compression between heated plates",
+      "Inflating a heated tube of plastic with air",
+      "Rotating powder inside a mould",
+      "Pulling molten plastic through a die"
+    ],
+    correctIndex: 1,
+    explanation: "A heated parison or preform is expanded using compressed air so it conforms to the shape of the mould."
+  },
+  {
+    topic: "Extrusion",
+    question: "Which product is MOST likely produced by extrusion?",
+    choices: ["Plastic bottle", "Bucket", "PVC pipe", "Complex 3D housing"],
+    correctIndex: 2,
+    explanation: "Extrusion produces continuous profiles with constant cross-section, such as pipes, tubing, and window frames."
+  },
+  {
+    topic: "Extrusion",
+    question: "What distinguishes extrusion from injection moulding?",
+    choices: [
+      "Extrusion uses higher pressure",
+      "Extrusion produces continuous products",
+      "Extrusion requires closed moulds",
+      "Extrusion is only for thermosets"
+    ],
+    correctIndex: 1,
+    explanation: "Extrusion is a continuous process, whereas injection moulding produces discrete parts."
+  },
+  {
+    topic: "Rotational Moulding",
+    question: "What is a key advantage of rotational moulding?",
+    choices: [
+      "High internal pressure",
+      "Very thin wall sections",
+      "Uniform wall thickness without high pressure",
+      "High fibre reinforcement"
+    ],
+    correctIndex: 2,
+    explanation: "Rotational moulding uses low pressure and rotation to produce hollow parts with uniform wall thickness."
+  },
+  {
+    topic: "Rotational Moulding",
+    question: "Which product is commonly made using rotational moulding?",
+    choices: ["Plastic gears", "Fuel tanks", "Flat films", "Electrical connectors"],
+    correctIndex: 1,
+    explanation: "Large hollow products such as fuel tanks and water tanks are ideal for rotational moulding."
+  },
+  {
+    topic: "Calendaring",
+    question: "What is the primary purpose of the calendaring process?",
+    choices: [
+      "To produce hollow containers",
+      "To form thin plastic sheets and films",
+      "To mould complex 3D parts",
+      "To reinforce polymers with fibres"
+    ],
+    correctIndex: 1,
+    explanation: "Calendaring uses heated rollers to produce flat sheets or films with controlled thickness."
+  },
+  {
+    topic: "Calendaring",
+    question: "Which polymer is MOST commonly processed by calendaring?",
+    choices: ["Polyethylene", "PVC", "Nylon", "PTFE"],
+    correctIndex: 1,
+    explanation: "PVC is well suited to calendaring due to its thermal behaviour and ability to form smooth, flexible sheets."
+  },
+  {
+    topic: "Compression Moulding",
+    question: "Which type of plastic is MOST suitable for compression moulding?",
+    choices: ["Thermoplastics only", "Thermosets", "Elastomers only", "Recycled plastics"],
+    correctIndex: 1,
+    explanation: "Compression moulding is commonly used for thermosetting plastics, which cure under heat and pressure."
+  },
+  {
+    topic: "Compression Moulding",
+    question: "What is a major advantage of compression moulding?",
+    choices: [
+      "Very high cycle times",
+      "Minimal material waste",
+      "Excellent suitability for hollow parts",
+      "No need for heating"
+    ],
+    correctIndex: 1,
+    explanation: "Compression moulding produces little scrap because the correct amount of material is placed directly into the mould."
+  },
+  {
+    topic: "Thermoforming",
+    question: "What is the first step in thermoforming?",
+    choices: [
+      "Inject molten plastic",
+      "Heat a plastic sheet until soft",
+      "Mix resin and hardener",
+      "Compress powdered polymer"
+    ],
+    correctIndex: 1,
+    explanation: "Thermoforming begins by heating a thermoplastic sheet until it becomes soft and pliable."
+  },
+  {
+    topic: "Thermoforming",
+    question: "Which product is commonly produced by thermoforming?",
+    choices: ["Engine blocks", "Food packaging trays", "High-pressure pipes", "Structural beams"],
+    correctIndex: 1,
+    explanation: "Thin-walled packaging such as food trays and blister packs are commonly thermoformed."
+  },
+  {
+    topic: "Reaction Injection Moulding (RIM)",
+    question: "What distinguishes reaction injection moulding from standard injection moulding?",
+    choices: [
+      "Use of powdered polymers",
+      "Use of low-viscosity liquid reactants that polymerise in the mould",
+      "Use of high mould pressures",
+      "Use of continuous profiles"
+    ],
+    correctIndex: 1,
+    explanation: "RIM uses liquid reactants that chemically react and polymerise inside the mould, allowing thick sections and low mould pressure."
+  },
+  {
+    topic: "Transfer Moulding",
+    question: "Transfer moulding is MOST similar to which process?",
+    choices: ["Injection moulding", "Extrusion", "Blow moulding", "Calendaring"],
+    correctIndex: 0,
+    explanation: "Transfer moulding combines aspects of compression and injection moulding and is commonly used for thermosets."
+  },
+  {
+    topic: "Pultrusion",
+    question: "Pultrusion is best described as:",
+    choices: [
+      "A batch moulding process",
+      "A continuous process for fibre-reinforced plastics with constant cross-section",
+      "A hollow-part forming process",
+      "A low-temperature forming process"
+    ],
+    correctIndex: 1,
+    explanation: "Pultrusion continuously pulls fibres through resin and a heated die to produce constant cross-section composite profiles."
+  },
+  {
+    topic: "Processing Pressure",
+    question: "Which plastic manufacturing process typically operates at the LOWEST pressure?",
+    choices: [
+      "Injection moulding",
+      "Extrusion",
+      "Rotational moulding",
+      "Compression moulding"
+    ],
+    correctIndex: 2,
+    explanation: "Rotational moulding relies on gravity and rotation rather than pressure to shape parts."
+  },
+  {
+    topic: "Material Selection",
+    question: "Which factor MOST influences the choice of plastic manufacturing process?",
+    choices: [
+      "Colour of the polymer",
+      "Desired part geometry and production volume",
+      "Supplier location",
+      "Ambient temperature"
+    ],
+    correctIndex: 1,
+    explanation: "Part shape, wall thickness, tolerances, and production volume are the main drivers when selecting a plastic manufacturing process."
+  },
+  {
+    topic: "Manufacturing Trade-offs",
+    question: "Why might blow moulding be chosen over injection moulding for containers?",
+    choices: [
+      "Lower material strength",
+      "Ability to produce hollow parts in one step",
+      "Higher dimensional accuracy",
+      "Lower tooling cost for complex solid parts"
+    ],
+    correctIndex: 1,
+    explanation: "Blow moulding efficiently produces hollow items like bottles without the need for secondary joining operations."
+  }
+];
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

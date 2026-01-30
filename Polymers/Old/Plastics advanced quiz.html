@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Advanced Plastics Quiz (40 questions)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses advanced polymer chemistry and structure–property relationships, including polymerisation mechanisms, tacticity and copolymers, crystallinity and thermal transitions (Tg/Tm), viscoelastic behaviour (creep/relaxation), degradation and stabilisation, reinforcement and interfacial bonding, rheology and processability, and high-performance polymer selection.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+
+const QUESTIONS = [
+  {
+    topic: "Polymerisation Mechanisms",
+    question: "Which statement best describes addition (chain-growth) polymerisation?",
+    choices: [
+      "Monomers react and release small molecules like water",
+      "Chains grow by successive monomer addition to an active centre (radical/ion/coordination) with no small-molecule by-product",
+      "Polymer forms only through cross-linking reactions",
+      "Polymer can only be formed from bi-functional monomers"
+    ],
+    correctIndex: 1,
+    explanation: "In chain-growth (addition) polymerisation, a reactive chain end (radical, cation, anion, or coordination complex) adds monomer units rapidly. No small-molecule by-product is released, unlike condensation polymerisation."
+  },
+  {
+    topic: "Condensation Polymerisation",
+    question: "A key characteristic of condensation (step-growth) polymerisation is:",
+    choices: [
+      "High molecular weight forms immediately at low conversion",
+      "Small molecules are typically eliminated during reaction (e.g., H₂O, HCl)",
+      "Only vinyl monomers can react",
+      "It always produces thermosets"
+    ],
+    correctIndex: 1,
+    explanation: "Step-growth reactions often release small molecules and build molecular weight gradually. Very high molecular weight typically requires very high conversion and careful stoichiometric balance of functional groups."
+  },
+  {
+    topic: "Degree of Polymerisation",
+    question: "In step-growth polymerisation, high molecular weight is typically achieved when:",
+    choices: [
+      "Conversion is low (below 20%)",
+      "Conversion is moderate (around 50%)",
+      "Conversion is very high and functional group stoichiometry is close to 1:1",
+      "Initiator concentration is extremely high"
+    ],
+    correctIndex: 2,
+    explanation: "Step-growth systems require near-complete reaction and near-stoichiometric balance to form long chains. Even small stoichiometric imbalance can cap chain length and limit molecular weight."
+  },
+  {
+    topic: "Free-Radical Polymerisation",
+    question: "In free-radical polymerisation, increasing initiator concentration generally causes the polymer to have:",
+    choices: [
+      "Higher molecular weight because more radicals means faster growth",
+      "Lower molecular weight because more radicals means more chain starts and more terminations",
+      "No change in molecular weight",
+      "Only more branching, not molecular weight change"
+    ],
+    correctIndex: 1,
+    explanation: "More initiator produces more radical chains. This increases the number of growing chains and termination events, reducing average chain length (molecular weight), even though overall rate of polymerisation can increase."
+  },
+  {
+    topic: "Catalysts",
+    question: "Ziegler–Natta and metallocene catalysts are primarily used to control:",
+    choices: [
+      "Only colour and transparency",
+      "Tacticity and molecular weight distribution in polyolefins",
+      "Cross-link density in rubbers only",
+      "Hydrolysis resistance in polyesters only"
+    ],
+    correctIndex: 1,
+    explanation: "Coordination catalysts control stereochemistry (tacticity), comonomer incorporation, and molecular weight distribution—key drivers for crystallinity, stiffness, toughness, and processability of polyolefins."
+  },
+  {
+    topic: "Tacticity",
+    question: "Which tacticity generally enables the highest crystallinity in polypropylene?",
+    choices: ["Atactic", "Isotactic", "Syndiotactic", "Randomly cross-linked"],
+    correctIndex: 1,
+    explanation: "Isotactic PP has a regular arrangement of side groups, allowing chains to pack well and crystallise, increasing stiffness and melting temperature compared to atactic PP."
+  },
+  {
+    topic: "Copolymers",
+    question: "In general, adding a comonomer to a semicrystalline polymer (e.g., ethylene into polypropylene) tends to:",
+    choices: [
+      "Increase crystallinity by improving packing",
+      "Reduce crystallinity and lower Tm by disrupting chain regularity",
+      "Eliminate Tg completely",
+      "Always increase brittleness"
+    ],
+    correctIndex: 1,
+    explanation: "Comonomers disrupt regular packing and reduce crystallinity, often lowering melting temperature (Tm) and increasing toughness (depending on morphology and phase structure)."
+  },
+  {
+    topic: "Polymer Morphology",
+    question: "What best describes a semicrystalline polymer microstructure?",
+    choices: [
+      "Fully ordered crystal with no amorphous regions",
+      "A mixture of crystalline lamellae and amorphous regions",
+      "Random network of cross-links only",
+      "Only glassy amorphous structure"
+    ],
+    correctIndex: 1,
+    explanation: "Semicrystalline polymers contain ordered crystalline lamellae embedded in amorphous material. This two-phase morphology strongly affects stiffness, toughness, permeability, and thermal behaviour."
+  },
+  {
+    topic: "Glass Transition (Tg)",
+    question: "Tg corresponds to:",
+    choices: [
+      "Melting of crystalline regions",
+      "Onset of significant segmental motion in amorphous regions",
+      "Decomposition of polymer chains",
+      "Cross-linking of thermosets"
+    ],
+    correctIndex: 1,
+    explanation: "Tg is the temperature where amorphous chain segments gain mobility. Below Tg polymers are glassy/brittle; above Tg they become rubbery/ductile (for amorphous regions)."
+  },
+  {
+    topic: "Melting Temperature (Tm)",
+    question: "A true melting temperature (Tm) is most associated with:",
+    choices: [
+      "Fully amorphous polymers",
+      "Semicrystalline polymers with ordered regions",
+      "Thermosets after curing",
+      "Elastomers only"
+    ],
+    correctIndex: 1,
+    explanation: "Tm corresponds to melting of crystalline regions. Fully amorphous polymers do not have a true melting point; they soften through Tg and viscous flow."
+  },
+  {
+    topic: "Intermolecular Forces",
+    question: "Which polymer is expected to show strong hydrogen bonding and therefore higher strength/stiffness (all else equal)?",
+    choices: ["Polyethylene (PE)", "Polystyrene (PS)", "Nylon (polyamide)", "Polypropylene (PP)"],
+    correctIndex: 2,
+    explanation: "Polyamides (nylons) contain amide groups that form strong hydrogen bonds between chains, raising strength, stiffness, and often Tg compared to nonpolar polyolefins."
+  },
+  {
+    topic: "Chain Stiffening",
+    question: "Polystyrene is relatively stiff at room temperature primarily because:",
+    choices: [
+      "It is heavily cross-linked",
+      "Bulky phenyl side groups restrict rotation and segmental motion, increasing Tg",
+      "It is highly crystalline",
+      "It contains ionic bonding"
+    ],
+    correctIndex: 1,
+    explanation: "The phenyl ring is bulky and rigid, restricting chain mobility and increasing Tg. This yields stiffness but also brittleness at room temperature for general-purpose PS."
+  },
+  {
+    topic: "Plasticisers",
+    question: "Plasticisers typically:",
+    choices: [
+      "Increase Tg by restricting mobility",
+      "Decrease Tg by increasing free volume and chain mobility",
+      "Convert thermoplastics into thermosets",
+      "Increase crystallinity by perfecting packing"
+    ],
+    correctIndex: 1,
+    explanation: "Plasticisers sit between chains, reducing intermolecular attraction and increasing free volume. This lowers Tg and increases flexibility (classic in flexible PVC)."
+  },
+  {
+    topic: "Cross-Link Density",
+    question: "Increasing cross-link density in an elastomer generally:",
+    choices: [
+      "Increases permanent flow and creep",
+      "Reduces elastic recovery",
+      "Increases modulus and reduces swelling/solubility",
+      "Lowers thermal resistance"
+    ],
+    correctIndex: 2,
+    explanation: "Cross-links limit chain slippage and dissolution, increasing stiffness (modulus), reducing swelling in solvents, and improving dimensional stability—at the cost of extensibility if too high."
+  },
+  {
+    topic: "Vulcanisation",
+    question: "Vulcanisation of natural rubber primarily introduces:",
+    choices: [
+      "Crystalline lamellae",
+      "Covalent sulphur cross-links between chains",
+      "Aromatic rings along the backbone",
+      "Metallic bonding"
+    ],
+    correctIndex: 1,
+    explanation: "Sulphur vulcanisation forms cross-links between polymer chains, improving elasticity, strength, heat resistance, and reducing tackiness/creep."
+  },
+  {
+    topic: "Viscoelasticity",
+    question: "Which statement best captures viscoelastic behaviour in polymers?",
+    choices: [
+      "They deform elastically only",
+      "They deform plastically only",
+      "They show both time-dependent (viscous) and instantaneous (elastic) response",
+      "They do not change behaviour with temperature"
+    ],
+    correctIndex: 2,
+    explanation: "Polymers have time- and temperature-dependent deformation because chain motion is rate-controlled. This explains creep, stress relaxation, and strong sensitivity to strain rate."
+  },
+  {
+    topic: "Creep",
+    question: "Creep in polymers is most strongly accelerated when service temperature approaches:",
+    choices: ["0 K", "Tg", "Room temperature always", "Tm only"],
+    correctIndex: 1,
+    explanation: "Near Tg, segmental mobility increases sharply. Under sustained stress, chains can rearrange more easily, increasing creep rate and permanent deformation risk."
+  },
+  {
+    topic: "Stress Relaxation",
+    question: "Stress relaxation refers to:",
+    choices: [
+      "Increasing stress under constant strain over time",
+      "Decreasing stress under constant strain over time",
+      "Increasing strain under constant stress over time",
+      "Instant fracture at low strain"
+    ],
+    correctIndex: 1,
+    explanation: "In stress relaxation, strain is held constant while internal chain rearrangements reduce the stress required to maintain that strain—important for seals, clamps, and fastener preload."
+  },
+  {
+    topic: "Time–Temperature Superposition",
+    question: "Time–temperature superposition is used because polymer response at:",
+    choices: [
+      "High temperature and short time can resemble low temperature and long time",
+      "Low temperature and short time can resemble high temperature and long time",
+      "All temperatures give identical behaviour",
+      "Only crystalline polymers exhibit it"
+    ],
+    correctIndex: 0,
+    explanation: "Many viscoelastic processes shift with temperature. Higher temperature speeds molecular motion, so short-time high-T behaviour can mirror long-time low-T behaviour (basis for master curves)."
+  },
+  {
+    topic: "Environmental Stress Cracking",
+    question: "Environmental stress cracking (ESC) is most likely when a polymer is exposed to:",
+    choices: [
+      "Pure vacuum only",
+      "A chemical environment plus sustained stress (often below yield)",
+      "Only high temperature with no stress",
+      "Only ultraviolet light with no stress"
+    ],
+    correctIndex: 1,
+    explanation: "ESC occurs when certain chemicals reduce local resistance to cracking (often by plasticising or attacking interfaces) while stress drives crazing/crack growth—common in some PE/PC applications."
+  },
+  {
+    topic: "Crazing vs Shear Yielding",
+    question: "In many glassy polymers (e.g., PMMA, PS), 'crazing' is best described as:",
+    choices: [
+      "Uniform plastic flow with no voids",
+      "Microvoided, fibril-bridged regions that can absorb energy but may lead to cracking",
+      "Crystallisation during deformation",
+      "Chemical cross-linking during loading"
+    ],
+    correctIndex: 1,
+    explanation: "Crazes are localised zones of microvoids bridged by polymer fibrils. They can absorb energy (toughening in some systems) but often precede crack growth if not stabilised."
+  },
+  {
+    topic: "Molecular Weight Distribution",
+    question: "Why can a broader molecular weight distribution (MWD) improve processability in some thermoplastics?",
+    choices: [
+      "It eliminates viscosity",
+      "Lower-MW fraction reduces melt viscosity while higher-MW fraction maintains melt strength",
+      "It always increases Tg dramatically",
+      "It prevents oxidation"
+    ],
+    correctIndex: 1,
+    explanation: "A low-MW fraction can aid flow (lower viscosity), while high-MW chains provide entanglements and melt strength—useful in extrusion/blown film and reducing sag."
+  },
+  {
+    topic: "Chain Entanglement",
+    question: "Above the entanglement molecular weight, increasing molecular weight generally:",
+    choices: [
+      "Decreases toughness",
+      "Increases toughness and melt strength due to more entanglements",
+      "Eliminates creep completely",
+      "Prevents crystallisation"
+    ],
+    correctIndex: 1,
+    explanation: "Entanglements act like physical cross-links, improving toughness and melt strength. However, very high molecular weight can increase viscosity, complicating processing."
+  },
+  {
+    topic: "Nucleating Agents",
+    question: "A nucleating agent in a semicrystalline polymer typically:",
+    choices: [
+      "Suppresses crystallisation completely",
+      "Increases crystallisation rate and can refine spherulite size",
+      "Raises Tg by cross-linking chains",
+      "Only affects colour"
+    ],
+    correctIndex: 1,
+    explanation: "Nucleating agents provide many sites for crystal growth, producing smaller, more uniform spherulites and often improving stiffness, clarity, and cycle time in moulding."
+  },
+  {
+    topic: "Orientation",
+    question: "Molecular orientation from drawing (e.g., fibres/films) generally causes properties to become:",
+    choices: [
+      "Isotropic (same in all directions)",
+      "Anisotropic (direction-dependent), stronger/stiffer along draw direction",
+      "Weaker in draw direction",
+      "Independent of processing"
+    ],
+    correctIndex: 1,
+    explanation: "Drawing aligns chains, increasing strength and stiffness along the draw direction but often reducing properties transverse to it and affecting shrinkage/warpage."
+  },
+  {
+    topic: "Polycarbonate (PC)",
+    question: "Polycarbonate is valued in engineering applications mainly for its:",
+    choices: [
+      "Extremely high crystallinity and Tm",
+      "High impact resistance and transparency (amorphous, high Tg)",
+      "Low cost and easy recycling only",
+      "Ability to be heat treated like steel"
+    ],
+    correctIndex: 1,
+    explanation: "PC is an amorphous polymer with high Tg and excellent impact toughness. Its chemistry yields strong intermolecular interactions and a tough glassy state, useful for safety glazing and housings."
+  },
+  {
+    topic: "Hydrolysis",
+    question: "Which polymer family is particularly susceptible to hydrolysis under heat and moisture?",
+    choices: ["Polyolefins (PE/PP)", "Polyesters (e.g., PET) and polyamides (nylon)", "PTFE", "Polystyrene"],
+    correctIndex: 1,
+    explanation: "Polyesters and polyamides contain hydrolysable linkages (ester/amide). Heat and moisture can break chains, lowering molecular weight and causing embrittlement—critical for drying requirements before processing."
+  },
+  {
+    topic: "UV Degradation",
+    question: "UV exposure often causes polymer embrittlement primarily by:",
+    choices: [
+      "Increasing molecular weight via chain extension",
+      "Breaking polymer chains (chain scission) and/or creating oxidised groups",
+      "Increasing crystallinity in all polymers",
+      "Eliminating Tg"
+    ],
+    correctIndex: 1,
+    explanation: "UV can initiate free-radical reactions leading to chain scission and oxidation. This reduces molecular weight and toughness. UV stabilisers (HALS/UV absorbers) are added to mitigate this."
+  },
+  {
+    topic: "Antioxidants",
+    question: "Primary antioxidants in polymers mainly function by:",
+    choices: [
+      "Absorbing visible light",
+      "Interrupting free-radical oxidation chain reactions",
+      "Increasing crystallinity",
+      "Creating cross-links"
+    ],
+    correctIndex: 1,
+    explanation: "Thermal oxidation proceeds via radical chain reactions. Primary antioxidants (often hindered phenols) donate hydrogen to radicals and terminate propagation, protecting during processing and service."
+  },
+  {
+    topic: "Flame Retardancy",
+    question: "Which statement about flame retardants is most accurate in engineering contexts?",
+    choices: [
+      "They always increase toughness and ductility",
+      "They can change decomposition pathways, reduce heat release, and may affect mechanical properties",
+      "They are only used in thermosets",
+      "They have no influence on smoke/toxicity"
+    ],
+    correctIndex: 1,
+    explanation: "Flame retardants act via gas-phase radical quenching, char formation, or endothermic decomposition. They often trade off toughness/strength and can influence smoke and toxicity, so selection is application-specific."
+  },
+  {
+    topic: "Fillers and Reinforcement",
+    question: "Adding short glass fibres to a thermoplastic typically:",
+    choices: [
+      "Reduces stiffness and increases elongation",
+      "Increases stiffness and strength but can reduce impact toughness and increase anisotropy",
+      "Eliminates creep completely",
+      "Prevents moisture absorption"
+    ],
+    correctIndex: 1,
+    explanation: "Fibres carry load and stiffen the composite, but introduce anisotropy, stress concentrations, and can reduce ductility. Fibre orientation from flow strongly affects performance and warpage."
+  },
+  {
+    topic: "Coupling Agents",
+    question: "Why are silane coupling agents used in glass-fibre reinforced polymers?",
+    choices: [
+      "To make fibres melt",
+      "To improve fibre–matrix adhesion and stress transfer",
+      "To lower Tg dramatically",
+      "To increase polymer branching only"
+    ],
+    correctIndex: 1,
+    explanation: "Coupling agents chemically bridge the inorganic fibre surface and organic polymer, improving interfacial bonding. Better adhesion improves strength, fatigue, and moisture resistance."
+  },
+  {
+    topic: "Rheology",
+    question: "Most polymer melts are 'shear-thinning', meaning viscosity:",
+    choices: [
+      "Increases as shear rate increases",
+      "Decreases as shear rate increases",
+      "Is constant regardless of shear rate",
+      "Depends only on colour"
+    ],
+    correctIndex: 1,
+    explanation: "Under shear, chains align and disentangle to some extent, reducing resistance to flow. Shear-thinning is why high shear in injection moulding helps fill complex moulds."
+  },
+  {
+    topic: "Melt Flow Index (MFI/MFR)",
+    question: "A higher melt flow rate (MFR) generally indicates:",
+    choices: [
+      "Higher viscosity and higher molecular weight",
+      "Lower viscosity and often lower molecular weight",
+      "Higher crystallinity only",
+      "A thermoset material"
+    ],
+    correctIndex: 1,
+    explanation: "Higher MFR means the polymer flows more easily under standard conditions (lower viscosity). This often correlates with lower molecular weight, which can reduce toughness and melt strength."
+  },
+  {
+    topic: "Thermoset Curing",
+    question: "During curing of an epoxy thermoset, the main microstructural change is:",
+    choices: [
+      "Formation of crystalline lamellae",
+      "Growth of a cross-linked network (gelation and vitrification)",
+      "Melting of existing crystals",
+      "Conversion into a pure elastomer"
+    ],
+    correctIndex: 1,
+    explanation: "Epoxy curing builds a 3D cross-linked network. Gelation forms an infinite network; vitrification can occur when Tg rises above cure temperature, slowing reaction and locking in structure."
+  },
+  {
+    topic: "Polyurethanes",
+    question: "A common feature of many polyurethane systems is:",
+    choices: [
+      "They are always semicrystalline thermoplastics",
+      "They can be tailored from flexible elastomers to rigid foams via chemistry and cross-linking",
+      "They cannot form foams",
+      "They rely on metallic bonding"
+    ],
+    correctIndex: 1,
+    explanation: "Polyurethanes are highly tunable: varying polyol/isocyanate chemistry, chain extenders, and cross-linking produces soft elastomers, rigid structural foams, coatings, or adhesives."
+  },
+  {
+    topic: "High-Performance Polymers",
+    question: "Why is PEEK used in demanding engineering environments?",
+    choices: [
+      "Very low Tg and poor chemical resistance",
+      "High thermal stability, chemical resistance, and strong semicrystalline structure",
+      "It is the cheapest polymer",
+      "It is always transparent and flexible"
+    ],
+    correctIndex: 1,
+    explanation: "PEEK has an aromatic backbone and strong intermolecular interactions, giving high Tg, high service temperature, and chemical resistance. Its semicrystalline morphology adds strength and wear performance."
+  },
+  {
+    topic: "Fluoropolymers",
+    question: "PTFE (Teflon) has exceptional chemical resistance largely because:",
+    choices: [
+      "It contains polar amide groups",
+      "The C–F bond is very strong and the fluorinated surface is low-energy and inert",
+      "It is highly cross-linked",
+      "It has extensive hydrogen bonding"
+    ],
+    correctIndex: 1,
+    explanation: "The C–F bond is one of the strongest in organic chemistry, and fluorine shields the carbon backbone. This produces a chemically inert, low-surface-energy material with low friction."
+  },
+  {
+    topic: "Semi-crystalline Toughness",
+    question: "In semicrystalline polymers, increasing crystallinity generally causes:",
+    choices: [
+      "Higher stiffness and Tm, but potentially reduced impact toughness if too high",
+      "Lower stiffness and higher transparency always",
+      "No change in barrier properties",
+      "Elimination of Tg"
+    ],
+    correctIndex: 0,
+    explanation: "Crystals increase stiffness and thermal resistance, but excessive crystallinity can reduce toughness because amorphous regions that enable energy absorption are reduced and cracks may propagate more easily."
+  },
+  {
+    topic: "Analytical Techniques",
+    question: "Which technique is most directly used to measure Tg and Tm in polymers?",
+    choices: ["XRD", "DSC", "Optical microscopy", "Ultrasonic testing"],
+    correctIndex: 1,
+    explanation: "Differential Scanning Calorimetry (DSC) measures heat flow associated with transitions: Tg (step change in heat capacity) and Tm (endothermic melting peak)."
+  }
+];
+
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Polymers Chemistry Quiz - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+    <h1>Polymers Chemistry Quiz - 20 Questions</h1>
+    <p class="muted">Assesses students’ understanding of polymer chemistry, including monomers, addition and condensation polymerisation, chain structure, branching, cross-linking, and how chemical features such as aromatic rings, side groups, and intermolecular bonding influence the mechanical and thermal behaviour of common plastics.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Polymer Chemistry Basics",
+    question: "What is the fundamental chemical feature of all plastics?",
+    choices: [
+      "Metallic bonding",
+      "Short, rigid molecules",
+      "Long-chain molecules made from repeating units",
+      "Crystalline ionic lattices"
+    ],
+    correctIndex: 2,
+    explanation: "All plastics are polymers composed of long-chain molecules formed by repeating monomer units. The length, structure, and bonding of these chains determine polymer properties."
+  },
+  {
+    topic: "Monomers",
+    question: "What is a monomer?",
+    choices: [
+      "A finished plastic product",
+      "A repeating molecular unit that forms a polymer",
+      "A cross-link between polymer chains",
+      "A crystalline region in a polymer"
+    ],
+    correctIndex: 1,
+    explanation: "A monomer is a small molecule that chemically bonds with other monomers during polymerisation to form long polymer chains."
+  },
+  {
+    topic: "Ethene to Polyethylene",
+    question: "Which chemical change occurs when ethene is converted to polyethylene?",
+    choices: [
+      "Formation of aromatic rings",
+      "Breaking of single bonds",
+      "Opening of the C=C double bond and chain growth",
+      "Removal of hydrogen atoms only"
+    ],
+    correctIndex: 2,
+    explanation: "During addition polymerisation, the carbon–carbon double bond in ethene opens, allowing monomers to link together into long polyethylene chains."
+  },
+  {
+    topic: "Addition Polymerisation",
+    question: "Which type of polymerisation produces polyethylene and polypropylene?",
+    choices: [
+      "Condensation polymerisation",
+      "Addition polymerisation",
+      "Cross-linking",
+      "Vulcanisation"
+    ],
+    correctIndex: 1,
+    explanation: "Addition polymerisation involves monomers with double bonds joining together without producing by-products."
+  },
+  {
+    topic: "Saturated Polymers",
+    question: "Why is polyethylene chemically stable?",
+    choices: [
+      "It contains aromatic rings",
+      "It has strong carbon–carbon single bonds",
+      "It contains ionic bonding",
+      "It has high cross-link density"
+    ],
+    correctIndex: 1,
+    explanation: "Polyethylene chains consist of strong C–C and C–H single bonds, making them chemically inert and resistant to many chemicals."
+  },
+  {
+    topic: "Polymer Structure",
+    question: "What is the main chemical difference between LDPE and HDPE?",
+    choices: [
+      "Different monomers",
+      "Different chain branching",
+      "Different functional groups",
+      "Different polymerisation temperature only"
+    ],
+    correctIndex: 1,
+    explanation: "LDPE has significant chain branching, preventing close packing, while HDPE has minimal branching, allowing higher crystallinity and strength."
+  },
+  {
+    topic: "Crystallinity",
+    question: "How does chain branching affect polymer crystallinity?",
+    choices: [
+      "Increases crystallinity",
+      "Has no effect",
+      "Reduces crystallinity",
+      "Eliminates amorphous regions"
+    ],
+    correctIndex: 2,
+    explanation: "Branching prevents polymer chains from packing closely together, reducing crystallinity and stiffness."
+  },
+  {
+    topic: "Polystyrene (PS)",
+    question: "Why is polystyrene relatively stiff and brittle?",
+    choices: [
+      "It contains cross-links",
+      "It has ionic bonding",
+      "Bulky benzene rings restrict chain movement",
+      "It has low molecular weight"
+    ],
+    correctIndex: 2,
+    explanation: "The benzene rings attached to the polymer backbone hinder rotation and sliding of chains, increasing stiffness but reducing toughness."
+  },
+  {
+    topic: "Aromatic Rings",
+    question: "What effect do aromatic rings generally have on polymer chains?",
+    choices: [
+      "Increase flexibility",
+      "Increase chain stiffness",
+      "Lower glass transition temperature",
+      "Reduce intermolecular forces"
+    ],
+    correctIndex: 1,
+    explanation: "Aromatic rings are bulky and rigid, which restricts chain movement and increases stiffness and glass transition temperature."
+  },
+  {
+    topic: "PVC Chemistry",
+    question: "What chemical feature gives PVC its higher stiffness compared to polyethylene?",
+    choices: [
+      "Cross-linking",
+      "Chlorine atoms attached to the chain",
+      "Higher molecular weight only",
+      "Aromatic rings"
+    ],
+    correctIndex: 1,
+    explanation: "The chlorine atoms in PVC increase intermolecular attraction and restrict chain mobility, resulting in higher stiffness."
+  },
+  {
+    topic: "Plasticisers",
+    question: "How do plasticisers chemically affect polymers such as PVC?",
+    choices: [
+      "They form covalent cross-links",
+      "They reduce chain mobility",
+      "They increase chain mobility by spacing chains apart",
+      "They increase crystallinity"
+    ],
+    correctIndex: 2,
+    explanation: "Plasticisers sit between polymer chains, weakening secondary bonding and increasing flexibility."
+  },
+  {
+    topic: "Condensation Polymerisation",
+    question: "Which polymer is produced by condensation polymerisation?",
+    choices: ["Polyethylene", "Polypropylene", "Nylon", "Polystyrene"],
+    correctIndex: 2,
+    explanation: "Nylon forms via condensation polymerisation, where monomers react and release small molecules such as water."
+  },
+  {
+    topic: "By-products",
+    question: "What is a key feature of condensation polymerisation?",
+    choices: [
+      "No by-products are formed",
+      "Only double bonds are broken",
+      "Small molecules such as water are released",
+      "Chains cannot grow long"
+    ],
+    correctIndex: 2,
+    explanation: "Condensation reactions release small by-products (e.g. H₂O, HCl), unlike addition polymerisation."
+  },
+  {
+    topic: "Hydrogen Bonding",
+    question: "Why does nylon have higher strength than polyethylene?",
+    choices: [
+      "Higher carbon content",
+      "Hydrogen bonding between chains",
+      "More chain branching",
+      "Lower crystallinity"
+    ],
+    correctIndex: 1,
+    explanation: "Amide groups in nylon allow strong hydrogen bonding between chains, increasing strength and stiffness."
+  },
+  {
+    topic: "Polyesters",
+    question: "What functional group defines polyesters such as PET?",
+    choices: ["Amide", "Ether", "Ester", "Hydroxyl"],
+    correctIndex: 2,
+    explanation: "Polyesters contain ester linkages (–COO–), which influence strength, chemical resistance, and recyclability."
+  },
+  {
+    topic: "PET Structure",
+    question: "Why is PET stronger and stiffer than polyethylene?",
+    choices: [
+      "Lower molecular weight",
+      "Presence of aromatic rings and polar ester groups",
+      "Higher chain branching",
+      "Ionic bonding"
+    ],
+    correctIndex: 1,
+    explanation: "Aromatic rings stiffen the backbone, and polar ester groups increase intermolecular attraction."
+  },
+  {
+    topic: "Cross-Linking",
+    question: "What is the chemical effect of cross-linking in polymers?",
+    choices: [
+      "Chains slide more easily",
+      "Chains become permanently connected",
+      "Chains become shorter",
+      "Crystallinity disappears"
+    ],
+    correctIndex: 1,
+    explanation: "Cross-links form covalent bonds between chains, preventing flow and increasing stiffness and thermal resistance."
+  },
+  {
+    topic: "Elastomers",
+    question: "Why do elastomers require light cross-linking?",
+    choices: [
+      "To prevent melting",
+      "To allow chains to stretch and recover",
+      "To increase crystallinity",
+      "To reduce molecular weight"
+    ],
+    correctIndex: 1,
+    explanation: "Light cross-linking allows chains to stretch under load and return to their original shape without permanent deformation."
+  },
+  {
+    topic: "Glass Transition",
+    question: "Which chemical feature most strongly increases glass transition temperature (Tg)?",
+    choices: [
+      "Flexible backbone",
+      "Small side groups",
+      "Rigid backbone and bulky side groups",
+      "Low molecular weight"
+    ],
+    correctIndex: 2,
+    explanation: "Rigid backbones and bulky side groups restrict chain movement, raising Tg."
+  },
+  {
+    topic: "Structure–Property Link",
+    question: "Why does polymer chemistry play a critical role in material selection?",
+    choices: [
+      "It determines colour only",
+      "It controls chain mobility, bonding, and therefore mechanical and thermal behaviour",
+      "It affects cost only",
+      "It controls density only"
+    ],
+    correctIndex: 1,
+    explanation: "The chemistry of the polymer backbone and side groups controls stiffness, toughness, temperature resistance, and chemical stability."
+  }
+];
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

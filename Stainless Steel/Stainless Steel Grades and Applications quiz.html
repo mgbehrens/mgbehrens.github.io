@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Stainless Steel Quiz - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses students’ ability to distinguish between common stainless steel grades and groups, understand the role of key alloying elements (such as chromium, nickel, and molybdenum), and apply this knowledge to select appropriate materials for specific engineering and industrial applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Stainless Steel Grades",
+    question: "What is the primary difference between stainless steel grades 304 and 316?",
+    choices: [
+      "316 contains higher carbon",
+      "316 contains molybdenum for improved corrosion resistance",
+      "304 contains more nickel",
+      "304 is ferritic and 316 is austenitic"
+    ],
+    correctIndex: 1,
+    explanation: "Grade 316 contains molybdenum (typically 2–3%), which significantly improves resistance to pitting and crevice corrosion, especially in chloride-rich environments compared to 304."
+  },
+  {
+    topic: "Austenitic Grades",
+    question: "Which stainless steel grade is MOST commonly used for general-purpose food processing equipment?",
+    choices: ["410", "430", "304", "2205"],
+    correctIndex: 2,
+    explanation: "Grade 304 offers excellent corrosion resistance, formability, and cleanability, making it the most widely used stainless steel in food-processing applications."
+  },
+  {
+    topic: "Low-Carbon Grades",
+    question: "Why would grade 316L be selected instead of standard 316 for welded structures?",
+    choices: [
+      "Lower cost",
+      "Higher hardness",
+      "Reduced risk of intergranular corrosion after welding",
+      "Improved magnetic properties"
+    ],
+    correctIndex: 2,
+    explanation: "The lower carbon content in 316L reduces chromium carbide precipitation during welding, preserving corrosion resistance in the heat-affected zone."
+  },
+  {
+    topic: "Ferritic Stainless Steel",
+    question: "Which stainless steel grade is ferritic and commonly used in automotive exhaust systems?",
+    choices: ["304", "316", "409", "410"],
+    correctIndex: 2,
+    explanation: "Grade 409 is a ferritic stainless steel with moderate corrosion resistance and good high-temperature oxidation resistance, making it suitable for exhaust systems."
+  },
+  {
+    topic: "Martensitic Grades",
+    question: "Which property distinguishes martensitic stainless steels from austenitic grades?",
+    choices: [
+      "Higher corrosion resistance",
+      "Ability to be hardened by heat treatment",
+      "Non-magnetic behaviour",
+      "Higher nickel content"
+    ],
+    correctIndex: 1,
+    explanation: "Martensitic stainless steels contain higher carbon and can be quenched and tempered to achieve high hardness and strength."
+  },
+  {
+    topic: "Martensitic Applications",
+    question: "Which application MOST commonly uses martensitic stainless steel?",
+    choices: [
+      "Heat exchangers",
+      "Kitchen sinks",
+      "Cutting blades and knives",
+      "Chemical storage tanks"
+    ],
+    correctIndex: 2,
+    explanation: "Martensitic stainless steels are used where hardness and wear resistance are required, such as knives and cutting tools."
+  },
+  {
+    topic: "Ferritic Properties",
+    question: "Which alloying element is typically low or absent in ferritic stainless steels?",
+    choices: ["Chromium", "Nickel", "Carbon", "Silicon"],
+    correctIndex: 1,
+    explanation: "Ferritic stainless steels contain little to no nickel, which keeps costs lower but limits ductility compared to austenitic grades."
+  },
+  {
+    topic: "Duplex Stainless Steel",
+    question: "What is the key advantage of duplex stainless steels over austenitic grades?",
+    choices: [
+      "Higher ductility",
+      "Better polishability",
+      "Higher strength and improved resistance to stress corrosion cracking",
+      "Ability to be hardened by quenching"
+    ],
+    correctIndex: 2,
+    explanation: "Duplex stainless steels combine ferrite and austenite, giving them higher strength and excellent resistance to stress corrosion cracking."
+  },
+  {
+    topic: "Duplex Grades",
+    question: "Which duplex stainless steel grade is commonly used in marine and offshore applications?",
+    choices: ["304", "316", "2205", "410"],
+    correctIndex: 2,
+    explanation: "Grade 2205 duplex stainless steel offers high strength and excellent corrosion resistance in aggressive marine environments."
+  },
+  {
+    topic: "Nickel Content",
+    question: "What is the primary role of nickel in austenitic stainless steels?",
+    choices: [
+      "Increase hardness",
+      "Stabilise the austenitic (FCC) structure",
+      "Improve machinability",
+      "Reduce thermal expansion"
+    ],
+    correctIndex: 1,
+    explanation: "Nickel stabilises the FCC austenitic structure, improving toughness, ductility, and low-temperature performance."
+  },
+  {
+    topic: "Molybdenum",
+    question: "Which corrosion mechanism is molybdenum MOST effective at reducing?",
+    choices: [
+      "Uniform corrosion",
+      "Pitting and crevice corrosion",
+      "Oxidation at high temperature",
+      "Intergranular corrosion"
+    ],
+    correctIndex: 1,
+    explanation: "Molybdenum improves resistance to localised corrosion, particularly pitting and crevice corrosion in chloride environments."
+  },
+  {
+    topic: "Chromium Content",
+    question: "Which stainless steel grade relies primarily on chromium for corrosion resistance, with minimal nickel content?",
+    choices: ["304", "316", "430", "2205"],
+    correctIndex: 2,
+    explanation: "Grade 430 is a ferritic stainless steel that relies on chromium for corrosion resistance and contains little or no nickel."
+  },
+  {
+    topic: "Magnetism",
+    question: "Which stainless steel group is typically magnetic in the annealed condition?",
+    choices: [
+      "Austenitic",
+      "Ferritic",
+      "Austenitic-martensitic",
+      "None of the above"
+    ],
+    correctIndex: 1,
+    explanation: "Ferritic stainless steels are magnetic due to their BCC crystal structure."
+  },
+  {
+    topic: "Formability",
+    question: "Which stainless steel group generally offers the BEST formability?",
+    choices: ["Ferritic", "Martensitic", "Austenitic", "Duplex"],
+    correctIndex: 2,
+    explanation: "Austenitic stainless steels have excellent formability due to their FCC crystal structure and multiple slip systems."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "Which stainless steel group CANNOT be hardened by heat treatment?",
+    choices: ["Martensitic", "Ferritic", "Austenitic", "Both ferritic and austenitic"],
+    correctIndex: 3,
+    explanation: "Ferritic and austenitic stainless steels cannot be hardened by heat treatment and are strengthened mainly by cold working."
+  },
+  {
+    topic: "Machinability",
+    question: "Why are austenitic stainless steels often more difficult to machine than ferritic grades?",
+    choices: [
+      "Lower hardness",
+      "Higher work hardening rate",
+      "Lower strength",
+      "Poor corrosion resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Austenitic stainless steels work harden rapidly during machining, increasing tool wear and cutting forces."
+  },
+  {
+    topic: "High-Temperature Use",
+    question: "Which stainless steel group is best suited for high-temperature oxidation resistance?",
+    choices: ["Martensitic", "Ferritic", "Austenitic", "Duplex"],
+    correctIndex: 1,
+    explanation: "Ferritic stainless steels have good resistance to high-temperature oxidation and scaling due to their chromium content."
+  },
+  {
+    topic: "Cost Consideration",
+    question: "Which stainless steel group is generally the MOST cost-effective due to low nickel content?",
+    choices: ["Austenitic", "Duplex", "Ferritic", "Martensitic"],
+    correctIndex: 2,
+    explanation: "Ferritic stainless steels contain little to no nickel, making them less expensive and more price-stable."
+  },
+  {
+    topic: "Material Selection",
+    question: "Which stainless steel grade would be MOST appropriate for marine fasteners?",
+    choices: ["304", "316", "410", "430"],
+    correctIndex: 1,
+    explanation: "Grade 316 provides improved resistance to chloride-induced corrosion, making it suitable for marine fasteners."
+  },
+  {
+    topic: "Engineering Decision",
+    question: "Why might duplex stainless steel be selected instead of 316 for a structural component?",
+    choices: [
+      "Lower corrosion resistance",
+      "Higher ductility",
+      "Higher strength allowing reduced section thickness",
+      "Ease of machining"
+    ],
+    correctIndex: 2,
+    explanation: "Duplex stainless steels offer higher strength than austenitic grades, allowing thinner sections while maintaining corrosion resistance."
+  }
+];
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

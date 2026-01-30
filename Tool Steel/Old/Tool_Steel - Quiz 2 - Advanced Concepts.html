@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Template</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz 2: Tool Steels – Advanced Concepts (20 questions)</h1>
+    <p class="muted">Assesses deeper understanding of tool steel behaviour, including alloying effects, heat treatment responses, failure modes, and performance trade-offs in demanding applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+const QUESTIONS = [
+  {
+    topic: "Carbon & Hardness",
+    question: "Why does increasing carbon content improve hardness in tool steels?",
+    choices: [
+      "It increases ferrite content",
+      "It promotes martensite formation and carbide precipitation",
+      "It reduces grain size automatically",
+      "It improves corrosion resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Carbon enables martensite formation and the creation of hard alloy carbides, which increase hardness and wear resistance."
+  },
+  {
+    topic: "Chromium",
+    question: "What is the primary role of chromium in high-carbon tool steels?",
+    choices: [
+      "Improving electrical conductivity",
+      "Increasing wear resistance through carbide formation",
+      "Lowering melting temperature",
+      "Improving machinability"
+    ],
+    correctIndex: 1,
+    explanation: "Chromium forms hard chromium carbides, significantly improving wear resistance."
+  },
+  {
+    topic: "Molybdenum",
+    question: "Molybdenum is added to tool steels primarily to:",
+    choices: [
+      "Increase brittleness",
+      "Improve hot hardness and temper resistance",
+      "Reduce hardenability",
+      "Replace carbon"
+    ],
+    correctIndex: 1,
+    explanation: "Molybdenum improves red hardness and resistance to softening during tempering."
+  },
+  {
+    topic: "Vanadium",
+    question: "What is the main function of vanadium in tool steels?",
+    choices: [
+      "Grain refinement and carbide strengthening",
+      "Improving corrosion resistance",
+      "Reducing quench severity",
+      "Increasing thermal expansion"
+    ],
+    correctIndex: 0,
+    explanation: "Vanadium refines grain size and forms very hard vanadium carbides, improving wear resistance."
+  },
+  {
+    topic: "Tungsten",
+    question: "Why is tungsten commonly used in high-speed steels?",
+    choices: [
+      "It improves toughness only",
+      "It increases red hardness at high cutting temperatures",
+      "It improves machinability in the hardened state",
+      "It lowers density"
+    ],
+    correctIndex: 1,
+    explanation: "Tungsten maintains hardness at elevated temperatures, essential for cutting tools."
+  },
+  {
+    topic: "Hardenability",
+    question: "Which alloying element MOST improves hardenability in tool steels?",
+    choices: ["Sulphur", "Nickel", "Chromium", "Aluminium"],
+    correctIndex: 2,
+    explanation: "Chromium significantly increases hardenability by slowing transformation during cooling."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "Why are high-alloy tool steels often air hardened?",
+    choices: [
+      "Air cooling produces maximum hardness",
+      "Air cooling minimises distortion and cracking",
+      "Air cooling is faster than oil quenching",
+      "Air cooling prevents carbide formation"
+    ],
+    correctIndex: 1,
+    explanation: "High alloy content increases hardenability, allowing slower cooling with reduced distortion."
+  },
+  {
+    topic: "Decarburisation",
+    question: "What is the main consequence of surface decarburisation in tool steels?",
+    choices: [
+      "Increased surface hardness",
+      "Reduced surface wear resistance",
+      "Improved toughness",
+      "Higher corrosion resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Loss of carbon at the surface lowers hardness and wear resistance."
+  },
+  {
+    topic: "Cold Work Steels",
+    question: "Why do D-type tool steels have poor toughness compared to other groups?",
+    choices: [
+      "Low carbon content",
+      "High chromium carbide volume",
+      "Low hardness",
+      "Low alloy content"
+    ],
+    correctIndex: 1,
+    explanation: "Large volumes of hard carbides improve wear resistance but reduce toughness."
+  },
+  {
+    topic: "Hot Work Steels",
+    question: "Which property is MOST critical for hot-work tool steels?",
+    choices: [
+      "High electrical conductivity",
+      "Resistance to thermal fatigue",
+      "Maximum room-temperature hardness",
+      "Low density"
+    ],
+    correctIndex: 1,
+    explanation: "Hot-work tools experience cyclic heating and cooling, making thermal fatigue resistance essential."
+  },
+  {
+    topic: "High Speed Steels",
+    question: "What does the term 'red hardness' refer to?",
+    choices: [
+      "Hardness after oxidation",
+      "Hardness retained at elevated temperatures",
+      "Hardness of annealed steel",
+      "Surface hardness only"
+    ],
+    correctIndex: 1,
+    explanation: "Red hardness is the ability to retain hardness while glowing red-hot during cutting."
+  },
+  {
+    topic: "Cobalt",
+    question: "What is the role of cobalt in some high-speed steels?",
+    choices: [
+      "Improving corrosion resistance",
+      "Increasing hot hardness without forming carbides",
+      "Reducing cost",
+      "Improving machinability"
+    ],
+    correctIndex: 1,
+    explanation: "Cobalt increases red hardness but does not form carbides."
+  },
+  {
+    topic: "Machinability",
+    question: "Why are tool steels generally machined in the annealed condition?",
+    choices: [
+      "Annealed steel is corrosion resistant",
+      "Annealed steel has lower hardness",
+      "Annealed steel contains martensite",
+      "Annealed steel has higher wear resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Lower hardness improves machinability prior to final heat treatment."
+  },
+  {
+    topic: "Shock Resistance",
+    question: "Which trade-off is most common when selecting shock-resistant tool steels?",
+    choices: [
+      "Higher toughness but lower wear resistance",
+      "Higher wear resistance but lower toughness",
+      "Higher hardness and higher toughness",
+      "Lower cost and higher performance"
+    ],
+    correctIndex: 0,
+    explanation: "Shock-resistant steels sacrifice wear resistance to gain toughness."
+  },
+  {
+    topic: "Failure Analysis",
+    question: "A tool fails by chipping rather than uniform wear. This MOST likely indicates:",
+    choices: [
+      "Excessive toughness",
+      "Insufficient hardness",
+      "Insufficient toughness",
+      "High corrosion rate"
+    ],
+    correctIndex: 2,
+    explanation: "Chipping is typically associated with brittle behaviour and low toughness."
+  },
+  {
+    topic: "Alloy Balance",
+    question: "Why is excessive carbide content undesirable in some applications?",
+    choices: [
+      "It reduces hardness",
+      "It reduces toughness",
+      "It lowers melting temperature",
+      "It improves ductility"
+    ],
+    correctIndex: 1,
+    explanation: "Excess carbides act as crack initiation sites, reducing toughness."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "What is the purpose of tempering tool steels after quenching?",
+    choices: [
+      "To increase brittleness",
+      "To relieve stresses and improve toughness",
+      "To dissolve carbides",
+      "To increase carbon content"
+    ],
+    correctIndex: 1,
+    explanation: "Tempering reduces internal stresses and balances hardness with toughness."
+  },
+  {
+    topic: "Alloy Comparison",
+    question: "Compared to tungsten HSS, molybdenum HSS generally offers:",
+    choices: [
+      "Lower red hardness",
+      "Improved toughness and lower density",
+      "No carbide formation",
+      "Higher corrosion resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Molybdenum HSS often provides a better balance of toughness and weight."
+  },
+  {
+    topic: "Manufacturing",
+    question: "Why is distortion a major concern during tool steel heat treatment?",
+    choices: [
+      "It affects electrical properties",
+      "It can render precision tools unusable",
+      "It improves wear resistance",
+      "It increases hardness variation"
+    ],
+    correctIndex: 1,
+    explanation: "Dimensional accuracy is critical for tooling applications."
+  },
+  {
+    topic: "Selection Criteria",
+    question: "When selecting a tool steel, which factor should be prioritised over maximum hardness?",
+    choices: [
+      "Colour",
+      "Cost",
+      "Service conditions and failure mode",
+      "Supplier availability"
+    ],
+    correctIndex: 2,
+    explanation: "Correct balance of hardness, toughness, wear, and temperature resistance is critical."
+  }
+];
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

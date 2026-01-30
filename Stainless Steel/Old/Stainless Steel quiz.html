@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stainless Steel Quiz - 20 Questions</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Tests students’ understanding of stainless steel composition, alloying elements, crystal structures, corrosion mechanisms, and the differences between austenitic, ferritic, martensitic, and duplex grades, with emphasis on property-application relationships and material selection.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Definition",
+    question: "What is the minimum chromium content required for a steel to be classified as stainless steel?",
+    choices: ["5%", "8%", "10.5%", "15%"],
+    correctIndex: 2,
+    explanation: "A minimum of approximately 10.5% chromium is required to form a continuous, self-healing chromium oxide (Cr₂O₃) passive layer. This passive film is what gives stainless steel its corrosion resistance."
+  },
+  {
+    topic: "Corrosion Resistance",
+    question: "Why does chromium improve corrosion resistance in stainless steel?",
+    choices: [
+      "It increases hardness only",
+      "It forms a passive oxide layer on the surface",
+      "It removes carbon from the steel",
+      "It makes the steel non-magnetic"
+    ],
+    correctIndex: 1,
+    explanation: "Chromium reacts with oxygen to form a thin, stable chromium oxide layer that protects the underlying metal. If damaged, this passive layer can reform in the presence of oxygen."
+  },
+  {
+    topic: "Austenitic Stainless Steel",
+    question: "Which crystal structure is associated with austenitic stainless steels?",
+    choices: ["BCC", "FCC", "HCP", "Simple cubic"],
+    correctIndex: 1,
+    explanation: "Austenitic stainless steels have an FCC crystal structure, which contributes to their high ductility, toughness, and excellent formability."
+  },
+  {
+    topic: "Alloying Elements",
+    question: "Which element is primarily responsible for stabilising the austenitic (FCC) structure in stainless steel?",
+    choices: ["Chromium", "Carbon", "Nickel", "Molybdenum"],
+    correctIndex: 2,
+    explanation: "Nickel stabilises the austenitic (FCC) phase at room temperature, preventing transformation to ferrite or martensite and improving toughness."
+  },
+  {
+    topic: "Grades",
+    question: "Which stainless steel grade is commonly referred to as \"18/8\"?",
+    choices: ["410", "430", "304", "316"],
+    correctIndex: 2,
+    explanation: "Grade 304 typically contains approximately 18% chromium and 8% nickel, giving rise to the term 18/8 stainless steel."
+  },
+  {
+    topic: "Molybdenum",
+    question: "What is the primary benefit of adding molybdenum to stainless steel (e.g. 316 vs 304)?",
+    choices: [
+      "Increased hardness",
+      "Improved resistance to pitting and crevice corrosion",
+      "Improved machinability",
+      "Increased magnetic properties"
+    ],
+    correctIndex: 1,
+    explanation: "Molybdenum significantly improves resistance to pitting and crevice corrosion, particularly in chloride-rich environments such as marine or chemical processing applications."
+  },
+  {
+    topic: "Magnetism",
+    question: "Why are most austenitic stainless steels non-magnetic in the annealed condition?",
+    choices: [
+      "They contain no iron",
+      "They have an FCC crystal structure",
+      "They contain high carbon",
+      "They are fully hardened"
+    ],
+    correctIndex: 1,
+    explanation: "The FCC crystal structure of austenitic stainless steels is non-magnetic. However, cold working can induce some martensite and cause slight magnetism."
+  },
+  {
+    topic: "Ferritic Stainless Steel",
+    question: "Which crystal structure is associated with ferritic stainless steels?",
+    choices: ["FCC", "BCC", "HCP", "Amorphous"],
+    correctIndex: 1,
+    explanation: "Ferritic stainless steels have a BCC crystal structure, similar to ferrite in carbon steels, which makes them magnetic and limits their ductility compared to austenitic grades."
+  },
+  {
+    topic: "Ferritic Properties",
+    question: "Which property is characteristic of ferritic stainless steels?",
+    choices: [
+      "Excellent toughness at low temperatures",
+      "High nickel content",
+      "Magnetic behaviour",
+      "Ability to be hardened by heat treatment"
+    ],
+    correctIndex: 2,
+    explanation: "Ferritic stainless steels are magnetic due to their BCC structure and generally contain little to no nickel."
+  },
+  {
+    topic: "Martensitic Stainless Steel",
+    question: "Which type of stainless steel can be hardened by heat treatment?",
+    choices: ["Austenitic", "Ferritic", "Martensitic", "Duplex"],
+    correctIndex: 2,
+    explanation: "Martensitic stainless steels contain higher carbon and can form martensite on quenching, allowing them to be hardened and tempered."
+  },
+  {
+    topic: "Martensitic Applications",
+    question: "Which application commonly uses martensitic stainless steel?",
+    choices: [
+      "Food processing tanks",
+      "Surgical instruments and knives",
+      "Heat exchangers",
+      "Marine fasteners"
+    ],
+    correctIndex: 1,
+    explanation: "Martensitic stainless steels offer high hardness and strength, making them suitable for cutting tools, knives, and surgical instruments."
+  },
+  {
+    topic: "Duplex Stainless Steel",
+    question: "What microstructure characterises duplex stainless steels?",
+    choices: [
+      "Fully austenitic",
+      "Fully ferritic",
+      "A mixture of ferrite and austenite",
+      "Martensite and bainite"
+    ],
+    correctIndex: 2,
+    explanation: "Duplex stainless steels contain roughly equal amounts of ferrite and austenite, combining high strength with good corrosion resistance."
+  },
+  {
+    topic: "Duplex Properties",
+    question: "What is a key advantage of duplex stainless steels?",
+    choices: [
+      "Very high carbon content",
+      "Excellent resistance to stress corrosion cracking",
+      "Ease of heat treatment",
+      "Non-magnetic behaviour"
+    ],
+    correctIndex: 1,
+    explanation: "The mixed microstructure of duplex stainless steels provides high strength and excellent resistance to stress corrosion cracking."
+  },
+  {
+    topic: "Carbon Content",
+    question: "Why is carbon content generally kept low in austenitic stainless steels?",
+    choices: [
+      "To reduce density",
+      "To prevent carbide precipitation and intergranular corrosion",
+      "To increase hardness",
+      "To improve machinability"
+    ],
+    correctIndex: 1,
+    explanation: "Excess carbon can combine with chromium to form chromium carbides at grain boundaries, reducing corrosion resistance (sensitisation)."
+  },
+  {
+    topic: "Low-Carbon Grades",
+    question: "What does the 'L' designation in grades such as 304L or 316L indicate?",
+    choices: [
+      "Low strength",
+      "Low alloy content",
+      "Low carbon content",
+      "Low corrosion resistance"
+    ],
+    correctIndex: 2,
+    explanation: "The 'L' indicates low carbon content, which reduces the risk of sensitisation during welding."
+  },
+  {
+    topic: "Welding",
+    question: "Why are low-carbon or stabilised stainless steels preferred for welded structures?",
+    choices: [
+      "They are cheaper",
+      "They are harder",
+      "They reduce the risk of intergranular corrosion",
+      "They eliminate distortion"
+    ],
+    correctIndex: 2,
+    explanation: "Low-carbon or stabilised grades prevent chromium carbide formation during welding, maintaining corrosion resistance."
+  },
+  {
+    topic: "Strengthening",
+    question: "How are austenitic stainless steels typically strengthened?",
+    choices: [
+      "Heat treatment only",
+      "Cold working",
+      "Carburising",
+      "Quenching and tempering"
+    ],
+    correctIndex: 1,
+    explanation: "Austenitic stainless steels cannot be hardened by heat treatment but can be significantly strengthened through cold working."
+  },
+  {
+    topic: "Thermal Properties",
+    question: "Compared to carbon steel, austenitic stainless steel generally has:",
+    choices: [
+      "Lower thermal expansion",
+      "Higher thermal conductivity",
+      "Higher coefficient of thermal expansion",
+      "Lower toughness"
+    ],
+    correctIndex: 2,
+    explanation: "Austenitic stainless steels have a higher coefficient of thermal expansion, which must be considered in design and welding."
+  },
+  {
+    topic: "Machinability",
+    question: "Why are some stainless steels more difficult to machine than carbon steels?",
+    choices: [
+      "Low hardness",
+      "High thermal conductivity",
+      "High work hardening rate",
+      "Low ductility"
+    ],
+    correctIndex: 2,
+    explanation: "Austenitic stainless steels work harden rapidly during machining, increasing cutting forces and tool wear."
+  },
+  {
+    topic: "Material Selection",
+    question: "Why is stainless steel commonly selected for food and medical applications?",
+    choices: [
+      "Low cost",
+      "High hardness",
+      "Excellent corrosion resistance and cleanliness",
+      "Magnetic properties"
+    ],
+    correctIndex: 2,
+    explanation: "Stainless steel’s corrosion resistance, cleanability, and resistance to contamination make it ideal for hygienic applications."
+  }
+];
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

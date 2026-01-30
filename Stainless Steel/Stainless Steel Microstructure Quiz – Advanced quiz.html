@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Stainless Steel Quiz - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses advanced understanding of stainless steel microstructures, including austenite, ferrite, martensite, and harmful phase formations such as sigma phase and chromium carbides. The quiz focuses on phase stability, heat-treatment effects, sensitisation, and microstructure-related failure mechanisms, reinforcing how microstructural control influences mechanical performance, corrosion resistance, and high-temperature service behaviour.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Austenite Stability",
+    question: "Which alloying element is MOST effective at stabilising austenite in stainless steels?",
+    choices: ["Chromium", "Nickel", "Molybdenum", "Carbon"],
+    correctIndex: 1,
+    explanation: "Nickel is the primary austenite stabiliser in stainless steels. It expands the austenite (FCC) phase field, preventing transformation to ferrite or martensite at room temperature and improving toughness."
+  },
+  {
+    topic: "Ferrite Formation",
+    question: "High chromium content in stainless steels promotes the formation of which phase?",
+    choices: ["Austenite", "Ferrite", "Martensite", "Sigma phase"],
+    correctIndex: 1,
+    explanation: "Chromium is a strong ferrite stabiliser. Increasing Cr content shifts the balance toward ferrite (BCC), particularly in ferritic and duplex stainless steels."
+  },
+  {
+    topic: "Sigma Phase",
+    question: "What is sigma (σ) phase in stainless steels?",
+    choices: [
+      "A soft, ductile iron-rich phase",
+      "A hard, brittle intermetallic phase rich in Cr and Mo",
+      "A form of martensite",
+      "A chromium oxide surface layer"
+    ],
+    correctIndex: 1,
+    explanation: "Sigma phase is a hard, brittle intermetallic compound rich in chromium and molybdenum. It forms during prolonged exposure to temperatures typically between 600–900 °C and severely reduces toughness and corrosion resistance."
+  },
+  {
+    topic: "Sigma Phase Formation",
+    question: "Which stainless steel family is MOST susceptible to sigma phase formation?",
+    choices: ["Austenitic", "Ferritic", "Martensitic", "Duplex"],
+    correctIndex: 3,
+    explanation: "Duplex stainless steels contain both ferrite and austenite. Sigma phase preferentially forms from ferrite, making duplex steels particularly susceptible if exposed to critical temperatures."
+  },
+  {
+    topic: "Temperature Effects",
+    question: "Sigma phase formation is most likely during:",
+    choices: [
+      "Rapid quenching from high temperature",
+      "Prolonged exposure to intermediate temperatures",
+      "Cryogenic service",
+      "Room-temperature aging"
+    ],
+    correctIndex: 1,
+    explanation: "Sigma phase forms during long exposure in the range of approximately 600–900 °C, such as improper heat treatment or high-temperature service."
+  },
+  {
+    topic: "Mechanical Impact",
+    question: "What is the primary mechanical consequence of sigma phase formation?",
+    choices: [
+      "Increased ductility",
+      "Increased toughness",
+      "Severe embrittlement",
+      "Improved fatigue life"
+    ],
+    correctIndex: 2,
+    explanation: "Sigma phase is extremely hard and brittle, leading to a dramatic reduction in toughness and increased susceptibility to cracking."
+  },
+  {
+    topic: "Corrosion Behaviour",
+    question: "Why does sigma phase reduce corrosion resistance?",
+    choices: [
+      "It increases carbon content",
+      "It consumes chromium and molybdenum from the matrix",
+      "It increases grain size",
+      "It promotes martensite formation"
+    ],
+    correctIndex: 1,
+    explanation: "Sigma phase depletes chromium and molybdenum from surrounding areas, reducing the ability to maintain a protective passive oxide layer."
+  },
+  {
+    topic: "Carbide Precipitation",
+    question: "Which carbides are responsible for sensitisation in austenitic stainless steels?",
+    choices: ["Fe3C", "Cr23C6", "VC", "Mo2C"],
+    correctIndex: 1,
+    explanation: "Chromium carbides (Cr23C6) precipitate at grain boundaries, depleting chromium locally and causing intergranular corrosion."
+  },
+  {
+    topic: "Sensitisation",
+    question: "Sensitisation in stainless steel typically occurs in which temperature range?",
+    choices: [
+      "Below 200 °C",
+      "400–850 °C",
+      "Above 1100 °C",
+      "At cryogenic temperatures"
+    ],
+    correctIndex: 1,
+    explanation: "Sensitisation occurs when chromium carbides form at grain boundaries during exposure to approximately 400–850 °C, such as during welding."
+  },
+  {
+    topic: "Low-Carbon Grades",
+    question: "Why do grades such as 304L and 316L resist sensitisation?",
+    choices: [
+      "Higher chromium content",
+      "Lower carbon content",
+      "Higher nickel content",
+      "Presence of sigma phase"
+    ],
+    correctIndex: 1,
+    explanation: "Lower carbon content reduces the amount of carbon available to form chromium carbides, preserving corrosion resistance after welding."
+  },
+  {
+    topic: "Stabilised Grades",
+    question: "How do titanium or niobium stabilised stainless steels prevent sensitisation?",
+    choices: [
+      "By forming chromium carbides",
+      "By forming stable TiC or NbC instead of Cr carbides",
+      "By eliminating ferrite",
+      "By increasing martensite content"
+    ],
+    correctIndex: 1,
+    explanation: "Titanium and niobium preferentially form carbides, preventing chromium carbide precipitation at grain boundaries."
+  },
+  {
+    topic: "Martensitic Transformation",
+    question: "Which stainless steel group relies on martensite formation for strength?",
+    choices: ["Austenitic", "Ferritic", "Martensitic", "Duplex"],
+    correctIndex: 2,
+    explanation: "Martensitic stainless steels are strengthened by quenching to form martensite, followed by tempering to balance hardness and toughness."
+  },
+  {
+    topic: "Strain-Induced Martensite",
+    question: "Which stainless steels can form martensite due to cold working?",
+    choices: ["Ferritic only", "Austenitic only", "Duplex only", "Martensitic only"],
+    correctIndex: 1,
+    explanation: "Metastable austenitic stainless steels (e.g. 304) can transform to martensite during cold work, increasing strength and causing partial magnetism."
+  },
+  {
+    topic: "Duplex Balance",
+    question: "What is the ideal microstructural balance in duplex stainless steel?",
+    choices: [
+      "100% ferrite",
+      "100% austenite",
+      "~50% ferrite / ~50% austenite",
+      "Ferrite with martensite"
+    ],
+    correctIndex: 2,
+    explanation: "An approximately equal balance of ferrite and austenite provides optimal strength, toughness, and corrosion resistance."
+  },
+  {
+    topic: "Ferrite Excess",
+    question: "Excess ferrite in duplex stainless steel MOST likely leads to:",
+    choices: [
+      "Improved ductility",
+      "Improved pitting resistance",
+      "Reduced toughness and corrosion resistance",
+      "Higher carbon solubility"
+    ],
+    correctIndex: 2,
+    explanation: "Too much ferrite increases susceptibility to sigma phase formation and reduces toughness and corrosion resistance."
+  },
+  {
+    topic: "Nitrogen",
+    question: "What is the primary role of nitrogen in modern duplex stainless steels?",
+    choices: [
+      "Reduce hardness",
+      "Stabilise austenite and improve strength",
+      "Promote sigma phase",
+      "Improve machinability"
+    ],
+    correctIndex: 1,
+    explanation: "Nitrogen stabilises austenite, increases strength through solid-solution strengthening, and improves resistance to pitting corrosion."
+  },
+  {
+    topic: "PREN Concept",
+    question: "Which elements contribute MOST strongly to the Pitting Resistance Equivalent Number (PREN)?",
+    choices: [
+      "C, Mn, Si",
+      "Cr, Mo, N",
+      "Fe, Ni, C",
+      "Ti, Nb, Al"
+    ],
+    correctIndex: 1,
+    explanation: "PREN is primarily based on chromium, molybdenum, and nitrogen, which enhance resistance to pitting corrosion."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "What heat treatment is used to dissolve sigma phase in stainless steel?",
+    choices: [
+      "Tempering",
+      "Normalising",
+      "Solution annealing followed by rapid cooling",
+      "Stress relieving"
+    ],
+    correctIndex: 2,
+    explanation: "Solution annealing at high temperature dissolves sigma phase back into solution, followed by rapid cooling to prevent re-precipitation."
+  },
+  {
+    topic: "Service Failure",
+    question: "A duplex stainless steel component fails brittle after long service at 750 °C. The MOST likely cause is:",
+    choices: [
+      "Carburisation",
+      "Hydrogen embrittlement",
+      "Sigma phase formation",
+      "Martensitic transformation"
+    ],
+    correctIndex: 2,
+    explanation: "Extended exposure to 600–900 °C promotes sigma phase formation, leading to severe embrittlement and loss of corrosion resistance."
+  },
+  {
+    topic: "Microstructure–Selection Link",
+    question: "Why is microstructural control critical when selecting stainless steel for high-temperature service?",
+    choices: [
+      "To reduce density",
+      "To avoid harmful phase transformations",
+      "To improve surface finish",
+      "To reduce alloy cost"
+    ],
+    correctIndex: 1,
+    explanation: "Incorrect microstructural evolution (e.g. sigma phase, carbides) can drastically reduce toughness and corrosion resistance, leading to premature failure."
+  }
+];
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

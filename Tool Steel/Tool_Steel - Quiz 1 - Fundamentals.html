@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Tool Steel Quiz - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+    <h1>Quiz 1: Tool Steels - Fundamentals (20 questions)</h1>
+    <p class="muted">Tests foundational knowledge of tool steel types, properties, heat treatment, and common applications, focusing on recognition and basic understanding.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+  const QUESTIONS = [
+  {
+    topic: "Tool Steel Basics",
+    question: "What is the primary purpose of tool steels?",
+    choices: [
+      "Structural support in buildings",
+      "Electrical conductivity",
+      "Cutting, forming, and shaping other materials",
+      "Corrosion resistance in marine environments"
+    ],
+    correctIndex: 2,
+    explanation: "Tool steels are designed for cutting, forming, and shaping due to their hardness and wear resistance."
+  },
+  {
+    topic: "Composition",
+    question: "Which element is most responsible for hardness in tool steels?",
+    choices: ["Nickel", "Carbon", "Silicon", "Aluminium"],
+    correctIndex: 1,
+    explanation: "Carbon increases hardness and strength by enabling martensite formation and carbide precipitation."
+  },
+  {
+    topic: "Classification",
+    question: "What does the letter 'W' represent in W-type tool steels?",
+    choices: [
+      "Wear resistant",
+      "Water hardened",
+      "Work hardened",
+      "Wrought steel"
+    ],
+    correctIndex: 1,
+    explanation: "W-type tool steels are water-hardening steels with relatively high carbon content."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "Why are tool steels commonly heat treated?",
+    choices: [
+      "To reduce density",
+      "To improve machinability only",
+      "To achieve required hardness and toughness",
+      "To prevent oxidation"
+    ],
+    correctIndex: 2,
+    explanation: "Heat treatment develops the microstructure needed for hardness, toughness, and wear resistance."
+  },
+  {
+    topic: "Cold Work Tool Steels",
+    question: "Which tool steel type is typically used for punches and dies at room temperature?",
+    choices: ["H-type", "D-type", "M-type", "P-type"],
+    correctIndex: 1,
+    explanation: "D-type tool steels are high-carbon, high-chromium cold-work steels with excellent wear resistance."
+  },
+  {
+    topic: "Hot Work Tool Steels",
+    question: "Hot-working tool steels are designed to resist:",
+    choices: [
+      "Electrical arcing",
+      "High-temperature softening",
+      "Corrosion in acids",
+      "Magnetic fields"
+    ],
+    correctIndex: 1,
+    explanation: "Hot-work steels retain strength and hardness at elevated temperatures."
+  },
+  {
+    topic: "High Speed Steel",
+    question: "What does HSS stand for?",
+    choices: [
+      "High Strength Steel",
+      "High Surface Steel",
+      "High Speed Steel",
+      "Hardened Structural Steel"
+    ],
+    correctIndex: 2,
+    explanation: "High Speed Steel is designed to cut at high speeds while retaining hardness."
+  },
+  {
+    topic: "Alloying Elements",
+    question: "Which element improves red hardness in high-speed steels?",
+    choices: ["Copper", "Tungsten", "Sulphur", "Phosphorus"],
+    correctIndex: 1,
+    explanation: "Tungsten improves hot hardness, allowing tools to retain cutting ability at high temperatures."
+  },
+  {
+    topic: "Microstructure",
+    question: "Which microstructure is primarily responsible for hardness in tool steels?",
+    choices: ["Ferrite", "Austenite", "Martensite", "Pearlite"],
+    correctIndex: 2,
+    explanation: "Martensite is a hard, supersaturated phase formed during rapid cooling."
+  },
+  {
+    topic: "Machinability",
+    question: "Why are some tool steels difficult to machine in the hardened condition?",
+    choices: [
+      "Low density",
+      "High ductility",
+      "High hardness and carbide content",
+      "Excessive thermal expansion"
+    ],
+    correctIndex: 2,
+    explanation: "High hardness and hard carbides significantly reduce machinability."
+  },
+  {
+    topic: "Wear Resistance",
+    question: "Which property is most critical for blanking and stamping dies?",
+    choices: [
+      "Electrical conductivity",
+      "Wear resistance",
+      "Low melting point",
+      "High corrosion resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Blanking and stamping involve repeated contact, requiring high wear resistance."
+  },
+  {
+    topic: "Toughness",
+    question: "Why is toughness important in tool steels?",
+    choices: [
+      "To allow plastic deformation during use",
+      "To prevent brittle fracture under impact",
+      "To improve corrosion resistance",
+      "To reduce tool weight"
+    ],
+    correctIndex: 1,
+    explanation: "Adequate toughness prevents cracking or catastrophic failure."
+  },
+  {
+    topic: "Surface Condition",
+    question: "What does 'decarb-free' tool steel indicate?",
+    choices: [
+      "No alloying elements present",
+      "Surface has not lost carbon",
+      "Steel has not been quenched",
+      "Steel is fully annealed"
+    ],
+    correctIndex: 1,
+    explanation: "Decarburisation reduces surface hardness, so decarb-free steel maintains performance."
+  },
+  {
+    topic: "Applications",
+    question: "Which tool steel is commonly used for injection moulds?",
+    choices: ["P-type", "W-type", "T-type", "S-type"],
+    correctIndex: 0,
+    explanation: "P-type steels are designed for plastic moulding applications."
+  },
+  {
+    topic: "Shock Resistance",
+    question: "Which tool steel group is designed to resist impact loading?",
+    choices: ["D-type", "S-type", "T-type", "L-type"],
+    correctIndex: 1,
+    explanation: "S-type steels offer high toughness and shock resistance."
+  },
+  {
+    topic: "Alloy Content",
+    question: "High chromium content in tool steels mainly improves:",
+    choices: [
+      "Electrical conductivity",
+      "Wear resistance",
+      "Thermal expansion",
+      "Magnetic permeability"
+    ],
+    correctIndex: 1,
+    explanation: "Chromium forms hard carbides, significantly improving wear resistance."
+  },
+  {
+    topic: "Heat Treatment",
+    question: "Why are some tool steels oil hardened instead of water hardened?",
+    choices: [
+      "Oil is cheaper",
+      "Oil cools faster",
+      "Oil reduces cracking and distortion",
+      "Oil increases surface hardness"
+    ],
+    correctIndex: 2,
+    explanation: "Oil quenching is less severe and reduces thermal shock."
+  },
+  {
+    topic: "Failure Modes",
+    question: "What is the most common failure mode of poorly selected tool steel?",
+    choices: [
+      "Electrical short circuit",
+      "Corrosion fatigue",
+      "Excessive wear or brittle fracture",
+      "Thermal expansion"
+    ],
+    correctIndex: 2,
+    explanation: "Incorrect selection often leads to wear or brittle failure."
+  },
+  {
+    topic: "Manufacturing",
+    question: "Why are tool steels often supplied in the annealed condition?",
+    choices: [
+      "To maximise hardness",
+      "To improve machinability before heat treatment",
+      "To prevent oxidation",
+      "To eliminate carbides"
+    ],
+    correctIndex: 1,
+    explanation: "Annealed condition allows easier machining prior to final heat treatment."
+  },
+  {
+    topic: "Selection",
+    question: "When selecting a tool steel, which factor is MOST important?",
+    choices: [
+      "Colour of the steel",
+      "Cost only",
+      "Service conditions and application",
+      "Supplier location"
+    ],
+    correctIndex: 2,
+    explanation: "Tool steel selection must match loading, temperature, wear, and impact conditions."
+  }
+];
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

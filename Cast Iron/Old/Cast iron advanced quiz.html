@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cast Iron - Advanced Microstructure, Alloying & Processing (20 Questions)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Evaluates advanced understanding of cast iron solidification, graphite morphology, alloying effects, heat treatment, and microstructural control, with emphasis on how processing and composition influence mechanical behaviour, wear performance, machinability, and real-world engineering applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Solidification & Eutectic",
+    question: "Cast irons are commonly designed to solidify near which eutectic reaction in the Fe–C system?",
+    choices: [
+      "Austenite → Ferrite + Cementite",
+      "Liquid → Austenite + Graphite (stable) or Austenite + Cementite (metastable)",
+      "Ferrite → Austenite",
+      "Martensite → Tempered martensite"
+    ],
+    correctIndex: 1,
+    explanation: "Most cast irons solidify near the eutectic (~4.3% C in the Fe–C system). Depending on chemistry and cooling rate, solidification can follow the stable eutectic (austenite + graphite) producing grey-type structures, or the metastable eutectic (austenite + cementite/ledeburite) producing white iron. Alloying and processing push the balance toward graphite or carbides."
+  },
+  {
+    topic: "Graphitising vs Carbide-Forming",
+    question: "Which element is the strongest graphitiser commonly used in cast irons?",
+    choices: ["Chromium", "Silicon", "Molybdenum", "Vanadium"],
+    correctIndex: 1,
+    explanation: "Silicon strongly promotes graphite formation (graphitiser) by encouraging the stable Fe–C route (graphite) instead of cementite. Higher Si generally reduces the tendency to form white iron, improves castability, and influences matrix (more ferrite potential), though excessive Si can increase brittleness in some conditions."
+  },
+  {
+    topic: "Carbide Stabilisation",
+    question: "Which alloying element most strongly promotes carbide formation and wear resistance in cast irons?",
+    choices: ["Chromium", "Nickel", "Silicon", "Aluminium"],
+    correctIndex: 0,
+    explanation: "Chromium is a strong carbide former and stabiliser. In cast irons, Cr encourages formation of hard carbides (e.g., (Fe,Cr)3C and complex carbides) and suppresses graphite, increasing hardness and abrasion resistance. This is why high-chromium white irons are used for severe wear (e.g., slurry pumps, liners)."
+  },
+  {
+    topic: "Grey Iron Graphite Morphology",
+    question: "Why do graphite flakes in grey iron reduce tensile strength compared to nodular graphite?",
+    choices: [
+      "Flakes dissolve into the matrix under load",
+      "Flakes create sharp stress concentrators that assist crack initiation",
+      "Flakes increase carbon solubility in ferrite",
+      "Flakes prevent pearlite formation"
+    ],
+    correctIndex: 1,
+    explanation: "Graphite flakes have sharp tips and long, thin geometry. Under tensile stress they act like micro-cracks and raise local stress intensity, so cracks initiate and propagate easily. This makes grey iron strong in compression but relatively weak and brittle in tension compared to ductile iron."
+  },
+  {
+    topic: "Damping Capacity",
+    question: "Grey cast iron has excellent vibration damping primarily because:",
+    choices: [
+      "It contains martensite",
+      "Graphite flakes dissipate vibrational energy and interrupt wave propagation",
+      "It has the highest tensile strength of cast irons",
+      "It contains large amounts of retained austenite"
+    ],
+    correctIndex: 1,
+    explanation: "The graphite flake network and the interfaces between graphite and matrix absorb and dissipate energy, reducing resonance and vibration. This is why grey iron is a classic choice for machine tool bases and engine blocks where damping is valuable."
+  },
+  {
+    topic: "White Iron & Ledeburite",
+    question: "White cast iron’s high hardness is mainly associated with the presence of:",
+    choices: ["Ferrite grains", "Pearlite only", "Cementite/ledeburitic carbide structures", "Graphite nodules"],
+    correctIndex: 2,
+    explanation: "White iron forms when carbon remains combined as cementite (Fe3C) and ledeburite (eutectic austenite + cementite) during solidification. Carbides are extremely hard and abrasion resistant but brittle, which explains white iron’s wear performance and poor impact toughness."
+  },
+  {
+    topic: "Chilling & Section Sensitivity",
+    question: "A casting shows white iron near thin edges but grey iron in thicker sections. This is most likely due to:",
+    choices: [
+      "Higher carbon content at the edges",
+      "Faster cooling rate at thin sections causing carbide formation (chill)",
+      "More silicon in thick sections only",
+      "Oxidation of graphite at the edges"
+    ],
+    correctIndex: 1,
+    explanation: "Thin sections cool faster, suppressing graphite nucleation and growth, so the structure shifts toward carbides (white iron). Thicker sections cool slower, giving graphite time to form (grey structure). This is called section sensitivity and is a key design/quality issue in cast irons."
+  },
+  {
+    topic: "Inoculation",
+    question: "What is the primary purpose of inoculation in grey cast iron production?",
+    choices: [
+      "Increase carbon content",
+      "Provide nucleation sites to promote fine, uniform graphite formation and reduce chill",
+      "Increase carbide formation for wear resistance",
+      "Convert ferrite to martensite"
+    ],
+    correctIndex: 1,
+    explanation: "Inoculation (often with ferrosilicon-based additives) provides nucleation sites for graphite during solidification. This increases graphite count, refines microstructure, improves machinability and strength consistency, and reduces the risk of chilling (unwanted white iron formation)."
+  },
+  {
+    topic: "Nodularisation",
+    question: "Ductile (nodular) iron requires treatment with magnesium primarily to:",
+    choices: [
+      "Increase chromium carbides",
+      "Change graphite from flakes to spheroidal nodules by modifying surface energy and growth",
+      "Increase nitrogen solubility",
+      "Transform pearlite into martensite"
+    ],
+    correctIndex: 1,
+    explanation: "Magnesium (and sometimes cerium/rare earths) modifies graphite growth so it forms spheroidal nodules rather than flakes. Spheroidal graphite drastically reduces stress concentration and improves tensile strength, ductility, fatigue resistance, and toughness compared to grey iron."
+  },
+  {
+    topic: "Ductile Iron Matrices",
+    question: "How can a foundry increase the strength of ductile iron while typically reducing ductility?",
+    choices: [
+      "Increase ferrite fraction in the matrix",
+      "Promote a pearlitic matrix (via chemistry and cooling/heat treatment)",
+      "Convert nodules back to flakes",
+      "Reduce silicon to near zero"
+    ],
+    correctIndex: 1,
+    explanation: "A pearlitic matrix (ferrite + cementite lamellae) increases strength and hardness but reduces ductility compared to a ferritic matrix. Foundries tune pearlite/ferrite balance with alloying (e.g., Mn, Cu, Sn promote pearlite) and cooling/heat treatment."
+  },
+  {
+    topic: "Role of Nickel (Ni)",
+    question: "Nickel is added to some cast irons mainly to:",
+    choices: [
+      "Promote graphite flake formation only",
+      "Improve toughness and corrosion resistance, and stabilise austenite in some alloyed irons",
+      "Strongly increase carbide content like chromium",
+      "Reduce hardenability"
+    ],
+    correctIndex: 1,
+    explanation: "Nickel is an austenite stabiliser and generally improves toughness and corrosion resistance. In some alloyed irons (e.g., Ni-resist irons), Ni stabilises an austenitic matrix, which can improve thermal shock resistance and corrosion performance in specific environments."
+  },
+  {
+    topic: "Role of Copper (Cu)",
+    question: "Copper additions in ductile and grey irons are commonly used to:",
+    choices: [
+      "Promote pearlite to increase strength and hardness",
+      "Eliminate graphite",
+      "Increase chill depth dramatically",
+      "Convert ferrite to martensite without quenching"
+    ],
+    correctIndex: 0,
+    explanation: "Copper is a pearlite promoter in cast irons. It helps shift the matrix toward pearlite, increasing strength and hardness. It’s often used with Mn or Sn in controlled amounts to achieve targeted mechanical properties."
+  },
+  {
+    topic: "Malleable Iron Production",
+    question: "Malleable cast iron is produced by heat treating white iron to:",
+    choices: [
+      "Dissolve graphite into austenite",
+      "Decompose cementite into temper carbon nodules and ferrite/pearlite",
+      "Form more ledeburite",
+      "Create a fully martensitic structure"
+    ],
+    correctIndex: 1,
+    explanation: "Malleable iron is made by annealing white iron for extended times. Cementite decomposes, producing temper carbon (rounded nodules) in a ferritic or pearlitic matrix. This reduces brittleness and improves ductility compared to white iron."
+  },
+  {
+    topic: "Compacted Graphite Iron (CGI)",
+    question: "Compared with grey iron, CGI typically provides:",
+    choices: [
+      "Lower strength and stiffness",
+      "Higher strength and stiffness while retaining useful thermal performance",
+      "Much higher ductility than ductile iron",
+      "A fully carbide microstructure"
+    ],
+    correctIndex: 1,
+    explanation: "CGI has graphite in a compacted/worm-like form, which reduces stress concentration compared to flakes but not as much as nodules. This gives higher strength and stiffness than grey iron and better thermal fatigue resistance than some alternatives, making CGI common in modern diesel engine blocks."
+  },
+  {
+    topic: "Austempered Ductile Iron (ADI)",
+    question: "What is the key microstructural feature of austempered ductile iron (ADI)?",
+    choices: [
+      "Tempered martensite with flakes",
+      "Austempered matrix (ausferrite: acicular ferrite + high-carbon austenite) with graphite nodules",
+      "Fully pearlitic matrix only",
+      "Ledeburite carbides throughout"
+    ],
+    correctIndex: 1,
+    explanation: "ADI is produced by austenitising then austempering to form ausferrite: a fine acicular ferrite structure with stabilised high-carbon austenite, while retaining graphite nodules. This microstructure provides an excellent strength–toughness balance, good fatigue performance, and wear resistance."
+  },
+  {
+    topic: "Graphite vs Carbides (Wear)",
+    question: "For severe abrasion (e.g., slurry pump liners), which cast iron family is most appropriate?",
+    choices: ["Grey iron", "High-chromium white iron", "Ferritic ductile iron", "Malleable iron"],
+    correctIndex: 1,
+    explanation: "High-chromium white irons are designed to form hard, wear-resistant carbides (e.g., M7C3-type carbides with Cr). These carbides provide outstanding abrasion resistance. The trade-off is reduced toughness, so design must manage impact/shock."
+  },
+  {
+    topic: "Failure Mode",
+    question: "A grey iron component fractures suddenly under tensile loading with little plastic deformation. This behaviour is mainly due to:",
+    choices: [
+      "High ferrite content only",
+      "Graphite flakes acting as crack initiators and limiting ductility",
+      "Too much nickel stabilising austenite",
+      "Excessive tempering"
+    ],
+    correctIndex: 1,
+    explanation: "Grey iron behaves brittle in tension because graphite flakes act as internal cracks and stress raisers. The matrix may be ferritic or pearlitic, but the flake morphology dominates tensile fracture behaviour by promoting crack initiation and propagation."
+  },
+  {
+    topic: "Machinability",
+    question: "Why is grey cast iron typically easier to machine than ductile iron of similar hardness?",
+    choices: [
+      "It contains no graphite",
+      "Graphite flakes act as chip breakers and provide a lubricating effect at the tool–chip interface",
+      "It always has a ferritic matrix",
+      "It has lower carbon content"
+    ],
+    correctIndex: 1,
+    explanation: "Graphite in grey iron reduces cutting forces and helps break chips, often improving tool life. Ductile iron has nodules rather than flakes and can be more prone to built-up edge and different chip formation, so machinability depends strongly on matrix and grade."
+  },
+  {
+    topic: "Heat Treatment & Matrix Control",
+    question: "If a ductile iron casting is required to maximise ductility (not strength), the preferred matrix is typically:",
+    choices: ["Martensitic", "Pearlitic", "Ferritic", "Carbide-rich"],
+    correctIndex: 2,
+    explanation: "A ferritic matrix provides higher ductility and toughness because ferrite is softer and more deformable than pearlite or martensite. Ferritic ductile iron is often used where impact resistance and elongation are more important than maximum strength."
+  },
+  {
+    topic: "Selection Logic",
+    question: "Which pairing best matches cast iron type to a typical application and the primary reason?",
+    choices: [
+      "Grey iron → pressure pipes (highest ductility)",
+      "Ductile iron → pressure pipes (strength and toughness from nodular graphite)",
+      "White iron → machine bases (best damping)",
+      "Malleable iron → slurry liners (maximum carbide wear resistance)"
+    ],
+    correctIndex: 1,
+    explanation: "Ductile iron is commonly used for pressure pipes because nodular graphite greatly improves toughness and tensile strength, reducing the risk of brittle failure. Grey iron is excellent for damping but not ideal for tensile/pressure loading; white iron is wear resistant but brittle; malleable iron improves ductility but isn’t the top choice for severe abrasion."
+  }
+];
+
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

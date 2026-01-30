@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Plastics Chemistry Quiz – Monomers, Polymerisation & Structure (20 Questions)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }
+    .wrap { max-width: 800px; margin: 0 auto; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    .muted { color: #666; font-size: 0.95rem; }
+    .q-title { margin: 0 0 8px; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    label { cursor: pointer; }
+    .btnrow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #ccc; background: #f6f6f6; cursor: pointer; }
+    button:hover { background: #eee; }
+    button.primary { background: #1f6feb; color: #fff; border-color: #1f6feb; }
+    button.primary:hover { background: #1857bd; }
+    .feedback { margin-top: 10px; padding: 10px; border-radius: 8px; }
+    .ok { background: #e9f7ef; border: 1px solid #bfe7cd; }
+    .bad { background: #fdecea; border: 1px solid #f5c2bd; }
+    .hidden { display: none; }
+    .progress { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .pill { padding: 4px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; }
+    .explain { margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Quiz</h1>
+    <p class="muted">Assesses students’ understanding of polymer chemistry, including monomers, addition and condensation polymerisation, chain structure, branching, cross-linking, and how chemical features such as aromatic rings, side groups, and intermolecular bonding influence the mechanical and thermal behaviour of common plastics.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+
+const QUESTIONS = [
+  {
+    topic: "Polymer Chemistry Basics",
+    question: "What is the fundamental chemical feature of all plastics?",
+    choices: [
+      "Metallic bonding",
+      "Short, rigid molecules",
+      "Long-chain molecules made from repeating units",
+      "Crystalline ionic lattices"
+    ],
+    correctIndex: 2,
+    explanation: "All plastics are polymers composed of long-chain molecules formed by repeating monomer units. The length, structure, and bonding of these chains determine polymer properties."
+  },
+  {
+    topic: "Monomers",
+    question: "What is a monomer?",
+    choices: [
+      "A finished plastic product",
+      "A repeating molecular unit that forms a polymer",
+      "A cross-link between polymer chains",
+      "A crystalline region in a polymer"
+    ],
+    correctIndex: 1,
+    explanation: "A monomer is a small molecule that chemically bonds with other monomers during polymerisation to form long polymer chains."
+  },
+  {
+    topic: "Ethene to Polyethylene",
+    question: "Which chemical change occurs when ethene is converted to polyethylene?",
+    choices: [
+      "Formation of aromatic rings",
+      "Breaking of single bonds",
+      "Opening of the C=C double bond and chain growth",
+      "Removal of hydrogen atoms only"
+    ],
+    correctIndex: 2,
+    explanation: "During addition polymerisation, the carbon–carbon double bond in ethene opens, allowing monomers to link together into long polyethylene chains."
+  },
+  {
+    topic: "Addition Polymerisation",
+    question: "Which type of polymerisation produces polyethylene and polypropylene?",
+    choices: [
+      "Condensation polymerisation",
+      "Addition polymerisation",
+      "Cross-linking",
+      "Vulcanisation"
+    ],
+    correctIndex: 1,
+    explanation: "Addition polymerisation involves monomers with double bonds joining together without producing by-products."
+  },
+  {
+    topic: "Saturated Polymers",
+    question: "Why is polyethylene chemically stable?",
+    choices: [
+      "It contains aromatic rings",
+      "It has strong carbon–carbon single bonds",
+      "It contains ionic bonding",
+      "It has high cross-link density"
+    ],
+    correctIndex: 1,
+    explanation: "Polyethylene chains consist of strong C–C and C–H single bonds, making them chemically inert and resistant to many chemicals."
+  },
+  {
+    topic: "Polymer Structure",
+    question: "What is the main chemical difference between LDPE and HDPE?",
+    choices: [
+      "Different monomers",
+      "Different chain branching",
+      "Different functional groups",
+      "Different polymerisation temperature only"
+    ],
+    correctIndex: 1,
+    explanation: "LDPE has significant chain branching, preventing close packing, while HDPE has minimal branching, allowing higher crystallinity and strength."
+  },
+  {
+    topic: "Crystallinity",
+    question: "How does chain branching affect polymer crystallinity?",
+    choices: [
+      "Increases crystallinity",
+      "Has no effect",
+      "Reduces crystallinity",
+      "Eliminates amorphous regions"
+    ],
+    correctIndex: 2,
+    explanation: "Branching prevents polymer chains from packing closely together, reducing crystallinity and stiffness."
+  },
+  {
+    topic: "Polystyrene (PS)",
+    question: "Why is polystyrene relatively stiff and brittle?",
+    choices: [
+      "It contains cross-links",
+      "It has ionic bonding",
+      "Bulky benzene rings restrict chain movement",
+      "It has low molecular weight"
+    ],
+    correctIndex: 2,
+    explanation: "The benzene rings attached to the polymer backbone hinder rotation and sliding of chains, increasing stiffness but reducing toughness."
+  },
+  {
+    topic: "Aromatic Rings",
+    question: "What effect do aromatic rings generally have on polymer chains?",
+    choices: [
+      "Increase flexibility",
+      "Increase chain stiffness",
+      "Lower glass transition temperature",
+      "Reduce intermolecular forces"
+    ],
+    correctIndex: 1,
+    explanation: "Aromatic rings are bulky and rigid, which restricts chain movement and increases stiffness and glass transition temperature."
+  },
+  {
+    topic: "PVC Chemistry",
+    question: "What chemical feature gives PVC its higher stiffness compared to polyethylene?",
+    choices: [
+      "Cross-linking",
+      "Chlorine atoms attached to the chain",
+      "Higher molecular weight only",
+      "Aromatic rings"
+    ],
+    correctIndex: 1,
+    explanation: "The chlorine atoms in PVC increase intermolecular attraction and restrict chain mobility, resulting in higher stiffness."
+  },
+  {
+    topic: "Plasticisers",
+    question: "How do plasticisers chemically affect polymers such as PVC?",
+    choices: [
+      "They form covalent cross-links",
+      "They reduce chain mobility",
+      "They increase chain mobility by spacing chains apart",
+      "They increase crystallinity"
+    ],
+    correctIndex: 2,
+    explanation: "Plasticisers sit between polymer chains, weakening secondary bonding and increasing flexibility."
+  },
+  {
+    topic: "Condensation Polymerisation",
+    question: "Which polymer is produced by condensation polymerisation?",
+    choices: ["Polyethylene", "Polypropylene", "Nylon", "Polystyrene"],
+    correctIndex: 2,
+    explanation: "Nylon forms via condensation polymerisation, where monomers react and release small molecules such as water."
+  },
+  {
+    topic: "By-products",
+    question: "What is a key feature of condensation polymerisation?",
+    choices: [
+      "No by-products are formed",
+      "Only double bonds are broken",
+      "Small molecules such as water are released",
+      "Chains cannot grow long"
+    ],
+    correctIndex: 2,
+    explanation: "Condensation reactions release small by-products (e.g. H₂O, HCl), unlike addition polymerisation."
+  },
+  {
+    topic: "Hydrogen Bonding",
+    question: "Why does nylon have higher strength than polyethylene?",
+    choices: [
+      "Higher carbon content",
+      "Hydrogen bonding between chains",
+      "More chain branching",
+      "Lower crystallinity"
+    ],
+    correctIndex: 1,
+    explanation: "Amide groups in nylon allow strong hydrogen bonding between chains, increasing strength and stiffness."
+  },
+  {
+    topic: "Polyesters",
+    question: "What functional group defines polyesters such as PET?",
+    choices: ["Amide", "Ether", "Ester", "Hydroxyl"],
+    correctIndex: 2,
+    explanation: "Polyesters contain ester linkages (–COO–), which influence strength, chemical resistance, and recyclability."
+  },
+  {
+    topic: "PET Structure",
+    question: "Why is PET stronger and stiffer than polyethylene?",
+    choices: [
+      "Lower molecular weight",
+      "Presence of aromatic rings and polar ester groups",
+      "Higher chain branching",
+      "Ionic bonding"
+    ],
+    correctIndex: 1,
+    explanation: "Aromatic rings stiffen the backbone, and polar ester groups increase intermolecular attraction."
+  },
+  {
+    topic: "Cross-Linking",
+    question: "What is the chemical effect of cross-linking in polymers?",
+    choices: [
+      "Chains slide more easily",
+      "Chains become permanently connected",
+      "Chains become shorter",
+      "Crystallinity disappears"
+    ],
+    correctIndex: 1,
+    explanation: "Cross-links form covalent bonds between chains, preventing flow and increasing stiffness and thermal resistance."
+  },
+  {
+    topic: "Elastomers",
+    question: "Why do elastomers require light cross-linking?",
+    choices: [
+      "To prevent melting",
+      "To allow chains to stretch and recover",
+      "To increase crystallinity",
+      "To reduce molecular weight"
+    ],
+    correctIndex: 1,
+    explanation: "Light cross-linking allows chains to stretch under load and return to their original shape without permanent deformation."
+  },
+  {
+    topic: "Glass Transition",
+    question: "Which chemical feature most strongly increases glass transition temperature (Tg)?",
+    choices: [
+      "Flexible backbone",
+      "Small side groups",
+      "Rigid backbone and bulky side groups",
+      "Low molecular weight"
+    ],
+    correctIndex: 2,
+    explanation: "Rigid backbones and bulky side groups restrict chain movement, raising Tg."
+  },
+  {
+    topic: "Structure–Property Link",
+    question: "Why does polymer chemistry play a critical role in material selection?",
+    choices: [
+      "It determines colour only",
+      "It controls chain mobility, bonding, and therefore mechanical and thermal behaviour",
+      "It affects cost only",
+      "It controls density only"
+    ],
+    correctIndex: 1,
+    explanation: "The chemistry of the polymer backbone and side groups controls stiffness, toughness, temperature resistance, and chemical stability."
+  }
+];
+
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

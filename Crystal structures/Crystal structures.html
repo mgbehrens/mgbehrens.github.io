@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Crystal structures Quiz - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+    <h1>Crystal structures Quiz - 20 Questions</h1>
+    <p class="muted">Assesses students’ understanding of common crystal structures (SC, BCC, FCC, HCP), unit cells, atomic packing, slip systems, and how crystal structure influences mechanical properties and material selection.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Crystal Structure Basics",
+    question: "What is meant by a crystal structure in materials science?",
+    choices: [
+      "The chemical composition of a material",
+      "The arrangement of atoms in a repeating three-dimensional pattern",
+      "The grain size of a metal",
+      "The surface finish of a material"
+    ],
+    correctIndex: 1,
+    explanation: "A crystal structure describes the regular, repeating three-dimensional arrangement of atoms in a solid. This atomic arrangement determines how atoms pack together, how they slide under stress, and ultimately controls key properties such as strength, ductility, and toughness."
+  },
+  {
+    topic: "Unit Cells",
+    question: "What is a unit cell?",
+    choices: [
+      "The smallest grain in a metal",
+      "A single atom of a material",
+      "The smallest repeating volume that represents the crystal structure",
+      "The space between atoms"
+    ],
+    correctIndex: 2,
+    explanation: "The unit cell is the smallest repeating building block of a crystal lattice. By repeating this unit cell in three dimensions, the entire crystal structure is formed. Understanding the unit cell allows engineers to calculate properties such as atomic packing factor and density."
+  },
+  {
+    topic: "Simple Cubic (SC)",
+    question: "How many atoms are effectively contained in a simple cubic (SC) unit cell?",
+    choices: ["1", "2", "4", "8"],
+    correctIndex: 0,
+    explanation: "A simple cubic unit cell has atoms only at the eight corners. Each corner atom is shared between eight unit cells, contributing 1/8 of an atom each. This results in a total of one atom per unit cell, giving SC a very low packing efficiency."
+  },
+  {
+    topic: "Simple Cubic (SC)",
+    question: "Which element is commonly associated with a simple cubic crystal structure?",
+    choices: ["Iron", "Copper", "Polonium", "Aluminium"],
+    correctIndex: 2,
+    explanation: "Polonium is one of the very few elements that naturally crystallises in the simple cubic structure. Because SC has poor packing efficiency and limited slip systems, it is rare in engineering materials."
+  },
+  {
+    topic: "Body-Centred Cubic (BCC)",
+    question: "How many atoms are effectively contained in a body-centred cubic (BCC) unit cell?",
+    choices: ["1", "2", "4", "6"],
+    correctIndex: 1,
+    explanation: "BCC has eight corner atoms contributing one atom total, plus one full atom at the centre of the cube. This gives a total of two atoms per unit cell, resulting in moderate packing efficiency compared to FCC and HCP."
+  },
+  {
+    topic: "BCC Properties",
+    question: "Which property is commonly associated with BCC metals?",
+    choices: [
+      "Very high ductility at all temperatures",
+      "Limited slip systems at low temperatures",
+      "Highest atomic packing factor",
+      "Close-packed structure"
+    ],
+    correctIndex: 1,
+    explanation: "BCC metals do not have close-packed slip planes. While they possess many possible slip systems, these require higher stress to activate, especially at low temperatures. This leads to reduced ductility and the possibility of brittle behaviour in cold conditions."
+  },
+  {
+    topic: "BCC Examples",
+    question: "Which of the following metals has a BCC crystal structure at room temperature?",
+    choices: ["Aluminium", "Copper", "Iron (α-iron)", "Nickel"],
+    correctIndex: 2,
+    explanation: "At room temperature, iron exists as α-iron (ferrite), which has a BCC crystal structure. This structure contributes to iron’s strength but also explains its ductile-to-brittle transition at low temperatures."
+  },
+  {
+    topic: "Face-Centred Cubic (FCC)",
+    question: "How many atoms are effectively contained in a face-centred cubic (FCC) unit cell?",
+    choices: ["2", "3", "4", "6"],
+    correctIndex: 2,
+    explanation: "FCC has eight corner atoms contributing one atom total, plus six face-centred atoms each contributing half an atom. This gives four atoms per unit cell and a very efficient atomic packing arrangement."
+  },
+  {
+    topic: "FCC Properties",
+    question: "Why are FCC metals generally very ductile?",
+    choices: [
+      "They have very strong covalent bonds",
+      "They have many close-packed slip systems",
+      "They have low atomic packing efficiency",
+      "They contain large grains"
+    ],
+    correctIndex: 1,
+    explanation: "FCC metals have close-packed {111} slip planes and multiple slip directions, allowing atoms to move easily under applied stress. This makes FCC metals highly ductile and ideal for forming operations such as rolling, drawing, and extrusion."
+  },
+  {
+    topic: "FCC Examples",
+    question: "Which of the following metals has an FCC crystal structure?",
+    choices: ["Iron (α)", "Chromium", "Copper", "Tungsten"],
+    correctIndex: 2,
+    explanation: "Copper has an FCC crystal structure, which contributes to its excellent ductility and electrical conductivity. This is why copper can be drawn into very fine wires without fracture."
+  },
+  {
+    topic: "Hexagonal Close-Packed (HCP)",
+    question: "How many atoms are effectively contained in an HCP unit cell?",
+    choices: ["2", "4", "6", "12"],
+    correctIndex: 2,
+    explanation: "When all corner, face, and interior atom contributions are considered, an HCP unit cell contains a total of six atoms. HCP is a close-packed structure, similar in packing efficiency to FCC."
+  },
+  {
+    topic: "HCP Properties",
+    question: "Why are HCP metals generally less ductile at room temperature?",
+    choices: [
+      "They have low atomic packing factor",
+      "They have fewer active slip systems",
+      "They have weak atomic bonds",
+      "They are always brittle"
+    ],
+    correctIndex: 1,
+    explanation: "Although HCP structures are close-packed, they have fewer independent slip systems available at room temperature. This limits plastic deformation and results in lower ductility compared to FCC metals."
+  },
+  {
+    topic: "HCP Examples",
+    question: "Which of the following metals has an HCP crystal structure?",
+    choices: ["Aluminium", "Magnesium", "Copper", "Nickel"],
+    correctIndex: 1,
+    explanation: "Magnesium has an HCP structure, which explains why it has limited ductility at room temperature and often requires elevated temperatures for forming."
+  },
+  {
+    topic: "Atomic Packing Factor",
+    question: "Which crystal structures have the highest atomic packing factor (APF)?",
+    choices: [
+      "SC only",
+      "BCC only",
+      "FCC and HCP",
+      "BCC and SC"
+    ],
+    correctIndex: 2,
+    explanation: "FCC and HCP are close-packed structures with an APF of approximately 0.74, meaning 74% of the unit cell volume is occupied by atoms. This high packing efficiency contributes to good ductility."
+  },
+  {
+    topic: "Packing Efficiency",
+    question: "What is the approximate atomic packing factor of a BCC structure?",
+    choices: ["0.52", "0.68", "0.74", "0.90"],
+    correctIndex: 1,
+    explanation: "BCC has an atomic packing factor of about 0.68. This lower packing efficiency compared to FCC and HCP contributes to higher strength but reduced ductility, particularly at low temperatures."
+  },
+  {
+    topic: "Slip Systems",
+    question: "Which crystal structure has the greatest number of easily activated slip systems?",
+    choices: ["SC", "BCC", "FCC", "HCP"],
+    correctIndex: 2,
+    explanation: "FCC structures have the most readily activated slip systems, which allows extensive plastic deformation under applied stress and explains their excellent formability."
+  },
+  {
+    topic: "Mechanical Behaviour",
+    question: "Which crystal structure is MOST likely to show a ductile-to-brittle transition as temperature decreases?",
+    choices: ["FCC", "HCP", "BCC", "SC"],
+    correctIndex: 2,
+    explanation: "BCC metals often show a ductile-to-brittle transition because slip becomes more difficult to activate at low temperatures, increasing the likelihood of brittle fracture."
+  },
+  {
+    topic: "Phase Changes",
+    question: "Iron changes from BCC to FCC at higher temperatures. What is this FCC phase called?",
+    choices: ["Ferrite", "Martensite", "Austenite", "Cementite"],
+    correctIndex: 2,
+    explanation: "When iron transforms to an FCC structure at elevated temperatures, it is known as austenite. This phase has higher ductility and can dissolve more carbon, which is critical for steel heat treatment."
+  },
+  {
+    topic: "Engineering Application",
+    question: "Why are FCC metals often preferred for forming operations such as rolling and drawing?",
+    choices: [
+      "They are the hardest metals",
+      "They have low density",
+      "They deform easily due to multiple slip systems",
+      "They have the smallest grains"
+    ],
+    correctIndex: 2,
+    explanation: "The large number of active slip systems in FCC metals allows atoms to move without fracture, making them ideal for extensive plastic deformation during forming processes."
+  },
+  {
+    topic: "Structure–Property Relationship",
+    question: "Why is crystal structure important when selecting a material for an engineering application?",
+    choices: [
+      "It determines colour",
+      "It controls properties such as ductility, strength, and toughness",
+      "It determines cost only",
+      "It affects only surface finish"
+    ],
+    correctIndex: 1,
+    explanation: "Crystal structure governs how atoms deform under stress, how cracks propagate, and how materials behave at different temperatures. This makes it a fundamental factor in material selection for safe and efficient engineering design."
+  }
+];
+
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>
