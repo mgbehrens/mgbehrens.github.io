@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Magnetic properties Quiz - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+     <h1>Magnetic properties quiz (20 questions)</h1>
+    <p class="muted">Assesses understanding of the atomic origins of magnetism, including electron spin and unpaired electrons, and compares diamagnetic, paramagnetic, and ferromagnetic materials. The quiz also covers magnetic domains, hysteresis curves, coercivity, retentivity, Curie temperature, and the selection of magnetic materials for engineering applications such as transformers, motors, and permanent magnets.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+const QUESTIONS = [
+  {
+    topic: "Fundamentals",
+    question: "What is the fundamental atomic origin of magnetism in materials?",
+    choices: [
+      "Atomic mass",
+      "Electron spin and orbital motion",
+      "Grain size",
+      "Crystal defects only"
+    ],
+    correctIndex: 1,
+    explanation: "Magnetism arises primarily from electron spin and, to a lesser extent, orbital motion. Unpaired electron spins create magnetic moments."
+  },
+  {
+    topic: "Electron Configuration",
+    question: "Why are unpaired electrons important for magnetism?",
+    choices: [
+      "They increase atomic size",
+      "They create net magnetic moments",
+      "They reduce electrical conductivity",
+      "They prevent diffusion"
+    ],
+    correctIndex: 1,
+    explanation: "Unpaired electrons produce a net magnetic moment. If all electrons are paired, their spins cancel and no permanent magnetic moment exists."
+  },
+  {
+    topic: "Diamagnetism",
+    question: "Which statement best describes diamagnetic materials?",
+    choices: [
+      "They are strongly attracted to magnetic fields",
+      "They have permanent magnetic moments",
+      "They are weakly repelled by magnetic fields",
+      "They require high temperature to become magnetic"
+    ],
+    correctIndex: 2,
+    explanation: "Diamagnetic materials have no unpaired electrons and are weakly repelled by magnetic fields due to induced opposing magnetic moments."
+  },
+  {
+    topic: "Paramagnetism",
+    question: "Paramagnetic materials are characterised by:",
+    choices: [
+      "Strong permanent magnetism",
+      "Weak attraction to a magnetic field due to unpaired electrons",
+      "Complete repulsion from magnetic fields",
+      "Magnetism only below 0°C"
+    ],
+    correctIndex: 1,
+    explanation: "Paramagnetic materials contain unpaired electrons that align weakly with an applied magnetic field but do not retain magnetisation when the field is removed."
+  },
+  {
+    topic: "Ferromagnetism",
+    question: "Which feature distinguishes ferromagnetic materials from paramagnetic materials?",
+    choices: [
+      "Presence of paired electrons only",
+      "Magnetic domains that align cooperatively",
+      "Lack of electron spin",
+      "Absence of hysteresis"
+    ],
+    correctIndex: 1,
+    explanation: "Ferromagnetic materials contain magnetic domains where atomic moments align cooperatively, producing strong and permanent magnetisation."
+  },
+  {
+    topic: "Common Materials",
+    question: "Which of the following is ferromagnetic at room temperature?",
+    choices: ["Aluminium", "Copper", "Iron", "Zinc"],
+    correctIndex: 2,
+    explanation: "Iron is ferromagnetic at room temperature due to strong exchange interactions between unpaired electrons."
+  },
+  {
+    topic: "Magnetic Domains",
+    question: "What are magnetic domains?",
+    choices: [
+      "Regions of random atomic orientation",
+      "Areas where atomic magnetic moments are aligned",
+      "Grain boundaries in ferromagnetic materials",
+      "Regions of high electrical resistance"
+    ],
+    correctIndex: 1,
+    explanation: "Magnetic domains are microscopic regions in which atomic magnetic moments are aligned in the same direction."
+  },
+  {
+    topic: "Magnetisation Process",
+    question: "Magnetisation of a ferromagnetic material initially occurs mainly by:",
+    choices: [
+      "Diffusion of atoms",
+      "Rotation of crystal grains",
+      "Movement and growth of magnetic domains",
+      "Creation of new electrons"
+    ],
+    correctIndex: 2,
+    explanation: "Magnetisation first increases by the movement and growth of favourably oriented magnetic domains."
+  },
+  {
+    topic: "Hysteresis",
+    question: "What does a magnetic hysteresis loop represent?",
+    choices: [
+      "Electrical resistance vs temperature",
+      "Stress vs strain",
+      "Magnetic flux density vs applied magnetic field",
+      "Heat flow vs time"
+    ],
+    correctIndex: 2,
+    explanation: "A hysteresis loop plots magnetic flux density (B) against applied magnetic field strength (H), showing magnetic behaviour during magnetisation and demagnetisation."
+  },
+  {
+    topic: "Retentivity",
+    question: "Retentivity refers to:",
+    choices: [
+      "Resistance to electrical flow",
+      "The ability to retain magnetisation after removing the field",
+      "The maximum applied magnetic field",
+      "The temperature where magnetism disappears"
+    ],
+    correctIndex: 1,
+    explanation: "Retentivity measures how much magnetisation remains when the external magnetic field is removed."
+  },
+  {
+    topic: "Coercivity",
+    question: "What is coercivity?",
+    choices: [
+      "The maximum magnetic flux density",
+      "The field required to demagnetise a material",
+      "The ability to conduct electricity",
+      "The Curie temperature"
+    ],
+    correctIndex: 1,
+    explanation: "Coercivity is the magnitude of reverse magnetic field required to reduce the magnetisation to zero."
+  },
+  {
+    topic: "Soft Magnetic Materials",
+    question: "Soft magnetic materials are characterised by:",
+    choices: [
+      "High coercivity and large hysteresis loss",
+      "Low coercivity and narrow hysteresis loops",
+      "Permanent magnetism",
+      "High Curie temperatures only"
+    ],
+    correctIndex: 1,
+    explanation: "Soft magnetic materials magnetise and demagnetise easily, making them suitable for transformers and electrical machines."
+  },
+  {
+    topic: "Hard Magnetic Materials",
+    question: "Hard magnetic materials are typically used for:",
+    choices: [
+      "Transformer cores",
+      "Electromagnets",
+      "Permanent magnets",
+      "Electrical insulation"
+    ],
+    correctIndex: 2,
+    explanation: "Hard magnetic materials have high coercivity and retentivity, allowing them to maintain permanent magnetisation."
+  },
+  {
+    topic: "Hysteresis Loss",
+    question: "Why is hysteresis loss important in electrical machines?",
+    choices: [
+      "It increases efficiency",
+      "It causes mechanical wear",
+      "It represents energy lost as heat during magnetic cycling",
+      "It improves magnet strength"
+    ],
+    correctIndex: 2,
+    explanation: "Each hysteresis loop represents energy loss per cycle, which appears as heat and reduces efficiency."
+  },
+  {
+    topic: "Curie Temperature",
+    question: "What happens to a ferromagnetic material above its Curie temperature?",
+    choices: [
+      "It becomes diamagnetic",
+      "It melts",
+      "It loses ferromagnetism and becomes paramagnetic",
+      "It becomes superconducting"
+    ],
+    correctIndex: 2,
+    explanation: "Above the Curie temperature, thermal energy disrupts domain alignment and the material becomes paramagnetic."
+  },
+  {
+    topic: "Temperature Effects",
+    question: "Why does increasing temperature reduce magnetic strength in ferromagnetic materials?",
+    choices: [
+      "Atoms shrink",
+      "Electron spins become disordered due to thermal agitation",
+      "Vacancies increase",
+      "Grain size decreases"
+    ],
+    correctIndex: 1,
+    explanation: "Thermal energy disrupts the alignment of magnetic moments, reducing overall magnetisation."
+  },
+  {
+    topic: "Crystal Structure",
+    question: "Why are some crystal structures more likely to be ferromagnetic?",
+    choices: [
+      "They have higher density",
+      "They allow strong exchange interactions between unpaired electrons",
+      "They contain more grain boundaries",
+      "They are always BCC"
+    ],
+    correctIndex: 1,
+    explanation: "Ferromagnetism depends on quantum mechanical exchange interactions, which are influenced by atomic spacing and crystal structure."
+  },
+  {
+    topic: "Engineering Applications",
+    question: "Which application requires a material with low hysteresis loss?",
+    choices: [
+      "Permanent magnets",
+      "Cutting tools",
+      "Transformer cores",
+      "Wear-resistant coatings"
+    ],
+    correctIndex: 2,
+    explanation: "Transformer cores require soft magnetic materials with minimal hysteresis loss to improve efficiency."
+  },
+  {
+    topic: "Material Selection",
+    question: "Why is aluminium not ferromagnetic?",
+    choices: [
+      "It is non-metallic",
+      "It has only paired electrons",
+      "It has too high a melting point",
+      "It lacks a crystal structure"
+    ],
+    correctIndex: 1,
+    explanation: "Aluminium’s electrons are paired in such a way that no net magnetic moment exists, making it paramagnetic rather than ferromagnetic."
+  },
+  {
+    topic: "Engineering Significance",
+    question: "Why is understanding magnetic properties important in engineering design?",
+    choices: [
+      "It only affects colour",
+      "It influences performance of motors, generators, sensors, and transformers",
+      "It determines corrosion resistance",
+      "It controls diffusion rates"
+    ],
+    correctIndex: 1,
+    explanation: "Magnetic behaviour directly affects efficiency, losses, and functionality of many electrical and electromechanical systems."
+  }
+];
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>

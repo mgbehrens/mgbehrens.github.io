@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Physical properties Quiz - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+     <h1>Physical properties quiz (20 questions)</h1>
+    <p class="muted">Assesses students’ understanding of fundamental physical properties such as mass and weight, density and relative density, thermal expansion, thermal conductivity, electrical conductivity and resistivity, and how these properties influence material selection and performance in engineering applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Mass",
+    question: "What is mass?",
+    choices: [
+      "The force acting on an object due to gravity",
+      "The amount of matter in an object",
+      "The volume occupied by an object",
+      "The resistance to deformation"
+    ],
+    correctIndex: 1,
+    explanation: "Mass is a measure of the amount of matter in an object and does not change with location or gravity."
+  },
+  {
+    topic: "Weight",
+    question: "How does weight differ from mass?",
+    choices: [
+      "Weight is constant everywhere",
+      "Weight depends on gravitational acceleration",
+      "Weight measures atomic density",
+      "Weight is independent of gravity"
+    ],
+    correctIndex: 1,
+    explanation: "Weight is the force exerted by gravity on a mass and varies with gravitational field strength."
+  },
+  {
+    topic: "Units",
+    question: "Which SI units are correct for mass and weight?",
+    choices: [
+      "Mass: newton, Weight: kilogram",
+      "Mass: kilogram, Weight: newton",
+      "Mass: gram, Weight: pascal",
+      "Mass: joule, Weight: watt"
+    ],
+    correctIndex: 1,
+    explanation: "Mass is measured in kilograms (kg), while weight is a force measured in newtons (N)."
+  },
+  {
+    topic: "Density",
+    question: "Density is defined as:",
+    choices: [
+      "Mass × volume",
+      "Volume ÷ mass",
+      "Mass ÷ volume",
+      "Weight ÷ area"
+    ],
+    correctIndex: 2,
+    explanation: "Density is the mass per unit volume of a material and is a key physical property for material identification."
+  },
+  {
+    topic: "Relative Density",
+    question: "Relative density (specific gravity) compares a material’s density to:",
+    choices: [
+      "Air at room temperature",
+      "Steel",
+      "Water at 4 °C",
+      "Vacuum"
+    ],
+    correctIndex: 2,
+    explanation: "Relative density compares the density of a material to that of water at 4 °C and has no units."
+  },
+  {
+    topic: "Lightweight Materials",
+    question: "Which material generally has the lowest density?",
+    choices: ["Steel", "Copper", "Aluminium", "Lead"],
+    correctIndex: 2,
+    explanation: "Aluminium has a much lower density than steel, copper, or lead, making it suitable for lightweight structures."
+  },
+  {
+    topic: "Thermal Expansion",
+    question: "What causes thermal expansion in materials?",
+    choices: [
+      "Increase in atomic mass",
+      "Atoms vibrating with greater amplitude at higher temperatures",
+      "Chemical reactions",
+      "Change in crystal structure only"
+    ],
+    correctIndex: 1,
+    explanation: "As temperature increases, atoms vibrate more, increasing the average spacing between them and causing expansion."
+  },
+  {
+    topic: "Coefficient of Thermal Expansion",
+    question: "The coefficient of thermal expansion describes:",
+    choices: [
+      "Change in strength with temperature",
+      "Change in length per unit length per degree temperature change",
+      "Change in mass with temperature",
+      "Change in conductivity with time"
+    ],
+    correctIndex: 1,
+    explanation: "It quantifies how much a material expands or contracts with a change in temperature."
+  },
+  {
+    topic: "Engineering Significance",
+    question: "Why is thermal expansion important in engineering design?",
+    choices: [
+      "It affects colour",
+      "It can cause thermal stresses and dimensional changes",
+      "It improves hardness",
+      "It reduces weight"
+    ],
+    correctIndex: 1,
+    explanation: "If not accounted for, thermal expansion can lead to distortion, cracking, or failure of components."
+  },
+  {
+    topic: "Thermal Conductivity",
+    question: "What does thermal conductivity measure?",
+    choices: [
+      "Resistance to heat flow",
+      "Ability of a material to conduct heat",
+      "Heat stored per unit mass",
+      "Temperature change over time"
+    ],
+    correctIndex: 1,
+    explanation: "Thermal conductivity indicates how efficiently heat is transferred through a material."
+  },
+  {
+    topic: "Heat Conductors",
+    question: "Which material has high thermal conductivity?",
+    choices: ["Rubber", "Plastic", "Copper", "Wood"],
+    correctIndex: 2,
+    explanation: "Copper has very high thermal conductivity, making it ideal for heat exchangers and electrical wiring."
+  },
+  {
+    topic: "Insulators",
+    question: "Which type of material is generally a good thermal insulator?",
+    choices: ["Metals", "Ceramics", "Polymers", "Alloys"],
+    correctIndex: 2,
+    explanation: "Polymers and many ceramics have low thermal conductivity and act as thermal insulators."
+  },
+  {
+    topic: "Electrical Conductivity",
+    question: "Electrical conductivity describes a material’s ability to:",
+    choices: [
+      "Conduct heat",
+      "Carry electric current",
+      "Resist corrosion",
+      "Absorb energy"
+    ],
+    correctIndex: 1,
+    explanation: "Electrical conductivity measures how easily electrons can move through a material."
+  },
+  {
+    topic: "Conductors",
+    question: "Why are metals generally good electrical conductors?",
+    choices: [
+      "They have low density",
+      "They contain free electrons",
+      "They are crystalline",
+      "They have high melting points"
+    ],
+    correctIndex: 1,
+    explanation: "Metals contain free or loosely bound electrons that can move easily under an applied electric field."
+  },
+  {
+    topic: "Resistivity",
+    question: "Electrical resistivity is best described as:",
+    choices: [
+      "The ability to conduct electricity",
+      "The resistance to electrical current flow",
+      "The density of a conductor",
+      "The voltage across a material"
+    ],
+    correctIndex: 1,
+    explanation: "Resistivity is an intrinsic property that measures how strongly a material opposes electric current."
+  },
+  {
+    topic: "Conductivity vs Resistivity",
+    question: "What is the relationship between conductivity and resistivity?",
+    choices: [
+      "They are unrelated",
+      "They are equal",
+      "They are inversely related",
+      "They increase together"
+    ],
+    correctIndex: 2,
+    explanation: "Conductivity is the inverse of resistivity; materials with low resistivity have high conductivity."
+  },
+  {
+    topic: "Temperature Effects",
+    question: "How does increasing temperature generally affect the electrical resistivity of metals?",
+    choices: [
+      "Decreases resistivity",
+      "Has no effect",
+      "Increases resistivity",
+      "Eliminates conductivity"
+    ],
+    correctIndex: 2,
+    explanation: "Higher temperatures increase atomic vibrations, which scatter electrons and increase resistivity in metals."
+  },
+  {
+    topic: "Material Comparison",
+    question: "Which material is most suitable for electrical insulation?",
+    choices: ["Copper", "Aluminium", "Steel", "Plastic"],
+    correctIndex: 3,
+    explanation: "Plastics have very high electrical resistivity and are commonly used as electrical insulators."
+  },
+  {
+    topic: "Combined Properties",
+    question: "Why is aluminium widely used in power transmission?",
+    choices: [
+      "High density and low conductivity",
+      "Low density and good electrical conductivity",
+      "High resistivity",
+      "Low thermal expansion"
+    ],
+    correctIndex: 1,
+    explanation: "Aluminium offers a good balance of low density and reasonable electrical conductivity, reducing weight in overhead lines."
+  },
+  {
+    topic: "Engineering Significance",
+    question: "Why are physical properties critical in material selection?",
+    choices: [
+      "They determine colour and appearance",
+      "They influence performance, safety, and efficiency in service",
+      "They only affect cost",
+      "They are unrelated to design"
+    ],
+    correctIndex: 1,
+    explanation: "Physical properties such as density, conductivity, and thermal expansion directly affect how materials perform in real engineering applications."
+  }
+];
+
+
+
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>
