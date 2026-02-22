@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>TTT & CCT Diagrams - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+     <h1>TTT & CCT Diagrams (20 questions)</h1>
+    <p class="muted">Assesses students’ understanding of Time–Temperature–Transformation (TTT) and Continuous Cooling Transformation (CCT) diagrams for steels and alloy steels, including phase transformations of austenite to pearlite, bainite, and martensite, the significance of the nose of the curve, Ms and Mf temperatures, hardenability, and the influence of alloying elements and cooling rate on final microstructure and mechanical properties.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+const QUESTIONS = [
+  {
+    topic: "TTT Basics",
+    question: "What does a TTT diagram represent?",
+    choices: [
+      "Temperature vs composition",
+      "Temperature vs time for isothermal transformation",
+      "Stress vs strain",
+      "Cooling rate vs grain size"
+    ],
+    correctIndex: 1,
+    explanation: "A TTT (Time-Temperature-Transformation) diagram shows how austenite transforms at constant temperatures over time."
+  },
+  {
+    topic: "CCT Basics",
+    question: "What is the key difference between TTT and CCT diagrams?",
+    choices: [
+      "TTT uses continuous cooling",
+      "CCT uses isothermal holding",
+      "TTT is isothermal, CCT is continuous cooling",
+      "They are identical"
+    ],
+    correctIndex: 2,
+    explanation: "TTT diagrams describe isothermal transformations, while CCT diagrams represent transformations during continuous cooling."
+  },
+  {
+    topic: "Phase Basics",
+    question: "TTT and CCT diagrams for steel begin with which phase?",
+    choices: [
+      "Ferrite",
+      "Pearlite",
+      "Martensite",
+      "Austenite"
+    ],
+    correctIndex: 3,
+    explanation: "Transformation diagrams assume the steel is fully austenitised before cooling."
+  },
+  {
+    topic: "Nose of the Curve",
+    question: "The 'nose' of a TTT diagram represents:",
+    choices: [
+      "Maximum hardness",
+      "Fastest transformation rate",
+      "Highest temperature",
+      "Martensite start"
+    ],
+    correctIndex: 1,
+    explanation: "The nose indicates the shortest time for austenite to begin transforming to pearlite or bainite."
+  },
+  {
+    topic: "Martensite Formation",
+    question: "Martensite forms when:",
+    choices: [
+      "Cooling is slow",
+      "Steel is held isothermally",
+      "Cooling is fast enough to avoid the nose of the curve",
+      "Temperature is above A1"
+    ],
+    correctIndex: 2,
+    explanation: "Rapid cooling prevents diffusion-based transformations, allowing martensite to form."
+  },
+  {
+    topic: "Martensite",
+    question: "Martensite transformation is:",
+    choices: [
+      "Diffusion controlled",
+      "Time dependent",
+      "Diffusionless and rapid",
+      "Equilibrium based"
+    ],
+    correctIndex: 2,
+    explanation: "Martensite forms via a diffusionless shear transformation."
+  },
+  {
+    topic: "Pearlite",
+    question: "Pearlite forms at:",
+    choices: [
+      "High cooling rates",
+      "Moderate temperatures under slower cooling",
+      "Below Ms temperature",
+      "Above liquidus"
+    ],
+    correctIndex: 1,
+    explanation: "Pearlite forms when austenite transforms slowly at moderate temperatures."
+  },
+  {
+    topic: "Bainite",
+    question: "Bainite forms:",
+    choices: [
+      "At very high temperatures",
+      "At intermediate temperatures between pearlite and martensite",
+      "Only in cast iron",
+      "Above austenite region"
+    ],
+    correctIndex: 1,
+    explanation: "Bainite forms at lower temperatures than pearlite but above martensite start temperature."
+  },
+  {
+    topic: "Ms Temperature",
+    question: "Ms temperature refers to:",
+    choices: [
+      "Maximum strength temperature",
+      "Martensite start temperature",
+      "Melting start",
+      "Microstructure shift point"
+    ],
+    correctIndex: 1,
+    explanation: "Ms is the temperature at which martensite begins forming during cooling."
+  },
+  {
+    topic: "Mf Temperature",
+    question: "Mf temperature represents:",
+    choices: [
+      "Martensite finish temperature",
+      "Maximum ferrite temperature",
+      "Minimum stress",
+      "Melting finish"
+    ],
+    correctIndex: 0,
+    explanation: "Mf is the temperature at which martensite formation is complete."
+  },
+  {
+    topic: "Cooling Rate",
+    question: "Increasing cooling rate generally:",
+    choices: [
+      "Increases pearlite formation",
+      "Promotes martensite formation",
+      "Reduces hardness",
+      "Increases grain size"
+    ],
+    correctIndex: 1,
+    explanation: "Faster cooling suppresses diffusion transformations and increases martensite formation."
+  },
+  {
+    topic: "Alloying Elements",
+    question: "Alloying elements such as Cr, Mo, and Ni shift the TTT curve:",
+    choices: [
+      "To the left",
+      "To the right",
+      "Upward only",
+      "Downward only"
+    ],
+    correctIndex: 1,
+    explanation: "Alloying elements slow diffusion and shift transformation curves to the right, increasing hardenability."
+  },
+  {
+    topic: "Hardenability",
+    question: "Hardenability refers to:",
+    choices: [
+      "Surface hardness only",
+      "Ability to form martensite throughout the section",
+      "Resistance to wear",
+      "Resistance to corrosion"
+    ],
+    correctIndex: 1,
+    explanation: "Hardenability describes how deeply martensite can form in a component."
+  },
+  {
+    topic: "Section Thickness",
+    question: "Thicker sections require:",
+    choices: [
+      "Slower cooling to form martensite",
+      "Higher hardenability steels",
+      "No alloying elements",
+      "Lower Ms temperature"
+    ],
+    correctIndex: 1,
+    explanation: "Thicker sections cool more slowly, so alloying elements are required to ensure martensite formation."
+  },
+  {
+    topic: "CCT vs TTT Shape",
+    question: "CCT curves are generally shifted compared to TTT curves because:",
+    choices: [
+      "Continuous cooling delays transformation",
+      "Cooling is faster",
+      "No diffusion occurs",
+      "Alloying elements are removed"
+    ],
+    correctIndex: 0,
+    explanation: "Under continuous cooling, transformation occurs later compared to isothermal conditions."
+  },
+  {
+    topic: "Tempering",
+    question: "Why is martensite tempered after quenching?",
+    choices: [
+      "To increase brittleness",
+      "To reduce internal stresses and improve toughness",
+      "To increase density",
+      "To form pearlite"
+    ],
+    correctIndex: 1,
+    explanation: "Tempering reduces brittleness and internal stresses while maintaining useful strength."
+  },
+  {
+    topic: "Retained Austenite",
+    question: "Retained austenite occurs when:",
+    choices: [
+      "Cooling is too slow",
+      "Mf temperature is below room temperature",
+      "Carbon is absent",
+      "Steel is pure iron"
+    ],
+    correctIndex: 1,
+    explanation: "If Mf is below room temperature, some austenite may remain untransformed."
+  },
+  {
+    topic: "Engineering Application",
+    question: "Which microstructure generally provides the highest hardness?",
+    choices: [
+      "Ferrite",
+      "Pearlite",
+      "Bainite",
+      "Martensite"
+    ],
+    correctIndex: 3,
+    explanation: "Martensite has a highly strained body-centered tetragonal structure, giving high hardness."
+  },
+  {
+    topic: "Bainite vs Pearlite",
+    question: "Compared to pearlite, bainite generally provides:",
+    choices: [
+      "Lower strength",
+      "Higher toughness and strength",
+      "Lower hardness",
+      "No difference"
+    ],
+    correctIndex: 1,
+    explanation: "Bainite typically offers a better balance of strength and toughness."
+  },
+  {
+    topic: "Industrial Significance",
+    question: "Why are TTT and CCT diagrams critical in heat treatment design?",
+    choices: [
+      "They predict density changes",
+      "They allow control of microstructure and mechanical properties",
+      "They measure stress directly",
+      "They eliminate alloying elements"
+    ],
+    correctIndex: 1,
+    explanation: "Transformation diagrams allow engineers to design cooling schedules to achieve desired microstructures and properties."
+  }
+];
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>
