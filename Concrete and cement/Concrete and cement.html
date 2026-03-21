@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Concrete & Cement - 20 Questions</title>
+    <style>
+    :root{
+      --bg: #0b0f14;
+      --text: #e6edf3;
+      --muted: #9aa7b2;
+      --card: #0f1620;
+      --border: #263241;
+      --shadow: rgba(0,0,0,.25);
+
+      --btn-bg: #162232;
+      --btn-bg-hover: #1b2a3e;
+      --btn-border: #2a3a4f;
+      --btn-text: var(--text);
+
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+
+      --ok-bg: rgba(34, 197, 94, 0.12);
+      --ok-border: rgba(34, 197, 94, 0.35);
+
+      --bad-bg: rgba(239, 68, 68, 0.12);
+      --bad-border: rgba(239, 68, 68, 0.35);
+
+      --focus: rgba(59, 130, 246, 0.45);
+    }
+
+    /* Optional: if user prefers light mode, respect it */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #ffffff;
+        --text: #111827;
+        --muted: #4b5563;
+        --card: #ffffff;
+        --border: #d1d5db;
+        --shadow: rgba(0,0,0,.08);
+
+        --btn-bg: #f3f4f6;
+        --btn-bg-hover: #e5e7eb;
+        --btn-border: #d1d5db;
+        --btn-text: #111827;
+
+        --primary: #1f6feb;
+        --primary-hover: #1857bd;
+
+        --ok-bg: #e9f7ef;
+        --ok-border: #bfe7cd;
+
+        --bad-bg: #fdecea;
+        --bad-border: #f5c2bd;
+
+        --focus: rgba(31, 111, 235, 0.35);
+      }
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 800px; margin: 0 auto; }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+
+    .muted{ color: var(--muted); font-size: 0.95rem; }
+
+    .q-title{ margin: 0 0 8px; }
+
+    .choices{ list-style: none; padding: 0; margin: 0; }
+    .choices li{ margin: 10px 0; }
+
+    label{ cursor: pointer; }
+    input[type="radio"]{
+      accent-color: var(--primary);
+      transform: translateY(1px);
+    }
+
+    /* Focus visibility */
+    button:focus, input[type="radio"]:focus{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .btnrow{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    button{
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+    }
+    button:hover{ background: var(--btn-bg-hover); }
+
+    button.primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    button.primary:hover{ background: var(--primary-hover); }
+
+    .feedback{
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .ok{ background: var(--ok-bg); border-color: var(--ok-border); }
+    .bad{ background: var(--bad-bg); border-color: var(--bad-border); }
+
+    .hidden{ display: none; }
+
+    .progress{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill{
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,.03);
+    }
+
+    .explain{ margin-top: 8px; }
+  
+    /* Fireworks overlay (shown only on 20/20) */
+    canvas.fireworks{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="quiz-header">
+  <a href="../index.html" class="index-link" aria-label="Back to Home">← Back to Home</a>
+</div>
+
+<style>
+  .quiz-header {
+    max-width: 1100px;
+    margin: 0 auto 12px auto;
+    padding: 12px 16px 0 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .index-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #eaeaf0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+
+  .index-link:hover {
+    background: rgba(255,255,255,0.14);
+  }
+</style>
+
+
+
+
+  <canvas id="fireworks" class="fireworks" style="display:none;"></canvas>
+
+  <div class="wrap">
+     <h1>Concrete and cement – (20 questions)</h1>
+    <p class="muted">Assesses students’ understanding of the composition and properties of concrete and cement, including hydration, water-cement ratio, workability, curing, strength development, durability, and the role of aggregates and reinforcement in engineering applications.</p>
+
+    <div class="card progress">
+      <div>
+        <div class="pill" id="progressText">Question 1 of 1</div>
+      </div>
+      <div class="pill" id="scoreText">Score: 0</div>
+    </div>
+
+    <div class="card" id="quizCard">
+      <h2 class="q-title" id="questionText">Loading…</h2>
+      <p class="muted" id="questionMeta"></p>
+
+      <form id="choicesForm">
+        <ul class="choices" id="choicesList"></ul>
+      </form>
+
+      <div class="btnrow">
+        <button class="primary" id="checkBtn" type="button">Check answer</button>
+        <button id="nextBtn" type="button" class="hidden">Next</button>
+        <button id="restartBtn" type="button">Restart</button>
+      </div>
+
+      <div id="feedbackBox" class="feedback hidden"></div>
+    </div>
+
+    <div class="card hidden" id="summaryCard">
+      <h2>Results</h2>
+      <p id="summaryText"></p>
+      <button class="primary" id="restartBtn2" type="button">Restart quiz</button>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // 1) QUESTION BANK (EDIT ME)
+    // =========================
+    // correctIndex is 0-based (0 = A, 1 = B, etc.)
+
+const QUESTIONS = [
+  {
+    topic: "Cement Definition",
+    question: "What is cement?",
+    choices: [
+      "A coarse aggregate",
+      "A binding material that sets and hardens",
+      "A type of sand",
+      "A reinforcement material"
+    ],
+    correctIndex: 1,
+    explanation: "Cement is a binding material that reacts with water (hydrates) and hardens, binding aggregates together."
+  },
+  {
+    topic: "Concrete Composition",
+    question: "Concrete is primarily made from:",
+    choices: [
+      "Cement only",
+      "Cement, water, fine and coarse aggregates",
+      "Sand and water only",
+      "Steel and cement"
+    ],
+    correctIndex: 1,
+    explanation: "Concrete consists of cement paste (cement + water) and aggregates (sand and gravel)."
+  },
+  {
+    topic: "Hydration",
+    question: "What is hydration in cement?",
+    choices: [
+      "Drying of concrete",
+      "Reaction between cement and water forming new compounds",
+      "Evaporation of water",
+      "Cooling process"
+    ],
+    correctIndex: 1,
+    explanation: "Hydration is a chemical reaction that produces calcium silicate hydrate (C-S-H) and gives concrete its strength."
+  },
+  {
+    topic: "Strength Development",
+    question: "Concrete gains strength primarily due to:",
+    choices: [
+      "Evaporation of water",
+      "Hydration reactions",
+      "Compaction only",
+      "Cooling"
+    ],
+    correctIndex: 1,
+    explanation: "Strength develops as hydration products form and bind the material."
+  },
+  {
+    topic: "Water-Cement Ratio",
+    question: "Lower water-cement ratio generally results in:",
+    choices: [
+      "Lower strength",
+      "Higher strength and durability",
+      "No change",
+      "Higher porosity"
+    ],
+    correctIndex: 1,
+    explanation: "Lower water content reduces porosity, increasing strength and durability."
+  },
+  {
+    topic: "Workability",
+    question: "What does workability refer to?",
+    choices: [
+      "Strength of concrete",
+      "Ease of mixing, placing, and finishing",
+      "Hardness only",
+      "Density"
+    ],
+    correctIndex: 1,
+    explanation: "Workability describes how easily concrete can be handled and placed."
+  },
+  {
+    topic: "Slump Test",
+    question: "The slump test measures:",
+    choices: [
+      "Strength",
+      "Workability",
+      "Density",
+      "Durability"
+    ],
+    correctIndex: 1,
+    explanation: "Slump indicates the consistency and flow of fresh concrete."
+  },
+  {
+    topic: "Aggregates",
+    question: "What is the primary function of aggregates in concrete?",
+    choices: [
+      "Act as binder",
+      "Provide bulk, strength, and reduce cost",
+      "Increase hydration rate",
+      "Improve colour"
+    ],
+    correctIndex: 1,
+    explanation: "Aggregates make up most of the volume and contribute to strength and economy."
+  },
+  {
+    topic: "Fine vs Coarse Aggregate",
+    question: "Fine aggregates are typically:",
+    choices: [
+      "Gravel",
+      "Sand",
+      "Cement",
+      "Steel fibres"
+    ],
+    correctIndex: 1,
+    explanation: "Fine aggregates consist of sand, filling voids between coarse aggregates."
+  },
+  {
+    topic: "Setting Time",
+    question: "Initial setting time refers to:",
+    choices: [
+      "Time until full strength",
+      "Time when concrete begins to stiffen",
+      "Time when concrete cracks",
+      "Time for curing"
+    ],
+    correctIndex: 1,
+    explanation: "Initial set marks the beginning of stiffening due to hydration."
+  },
+  {
+    topic: "Curing",
+    question: "Why is curing important?",
+    choices: [
+      "To dry concrete quickly",
+      "To maintain moisture for continued hydration",
+      "To increase temperature",
+      "To reduce strength"
+    ],
+    correctIndex: 1,
+    explanation: "Curing ensures hydration continues, improving strength and durability."
+  },
+  {
+    topic: "Compressive Strength",
+    question: "Concrete is strongest in:",
+    choices: [
+      "Tension",
+      "Compression",
+      "Shear",
+      "Impact"
+    ],
+    correctIndex: 1,
+    explanation: "Concrete has high compressive strength but low tensile strength."
+  },
+  {
+    topic: "Reinforcement",
+    question: "Why is steel reinforcement used in concrete?",
+    choices: [
+      "Increase compressive strength",
+      "Improve tensile strength",
+      "Reduce weight",
+      "Improve colour"
+    ],
+    correctIndex: 1,
+    explanation: "Steel reinforcement carries tensile loads that concrete cannot withstand."
+  },
+  {
+    topic: "Thermal Effects",
+    question: "Why can thermal expansion be an issue in concrete structures?",
+    choices: [
+      "It increases density",
+      "It causes cracking due to expansion and contraction",
+      "It improves strength",
+      "It prevents curing"
+    ],
+    correctIndex: 1,
+    explanation: "Temperature changes cause expansion/contraction, leading to stress and cracking."
+  },
+  {
+    topic: "Durability",
+    question: "Which factor most reduces concrete durability?",
+    choices: [
+      "Low water-cement ratio",
+      "High porosity",
+      "Proper curing",
+      "Good compaction"
+    ],
+    correctIndex: 1,
+    explanation: "High porosity allows water and chemicals to penetrate, reducing durability."
+  },
+  {
+    topic: "Admixtures",
+    question: "What is the purpose of admixtures?",
+    choices: [
+      "Increase cost",
+      "Modify properties such as setting time and workability",
+      "Replace aggregates",
+      "Reduce strength"
+    ],
+    correctIndex: 1,
+    explanation: "Admixtures are added to adjust properties like setting time, workability, and durability."
+  },
+  {
+    topic: "Air Entrainment",
+    question: "Air-entrained concrete improves:",
+    choices: [
+      "Strength only",
+      "Resistance to freeze-thaw cycles",
+      "Density",
+      "Colour"
+    ],
+    correctIndex: 1,
+    explanation: "Entrained air provides space for expansion of freezing water, reducing cracking."
+  },
+  {
+    topic: "Cement Types",
+    question: "Which cement is commonly used for general construction?",
+    choices: [
+      "White cement",
+      "Ordinary Portland Cement (OPC)",
+      "Rapid set cement only",
+      "Refractory cement"
+    ],
+    correctIndex: 1,
+    explanation: "OPC is the most widely used cement in construction."
+  },
+  {
+    topic: "Shrinkage",
+    question: "Drying shrinkage occurs due to:",
+    choices: [
+      "Hydration only",
+      "Loss of moisture from concrete",
+      "Increase in temperature",
+      "Addition of aggregates"
+    ],
+    correctIndex: 1,
+    explanation: "Loss of water causes volume reduction and potential cracking."
+  },
+  {
+    topic: "Engineering Significance",
+    question: "Why is concrete widely used in construction?",
+    choices: [
+      "Low strength",
+      "High compressive strength and versatility",
+      "Poor durability",
+      "High cost"
+    ],
+    correctIndex: 1,
+    explanation: "Concrete is strong in compression, versatile, and relatively low cost, making it ideal for structural use."
+  }
+];
+
+    // =========================
+    // 2) QUIZ ENGINE (NO NEED TO EDIT)
+    // =========================
+    let idx = 0;
+    let score = 0;
+    let answered = false; // prevent double scoring
+
+    const progressText = document.getElementById("progressText");
+    const scoreText = document.getElementById("scoreText");
+    const questionText = document.getElementById("questionText");
+    const questionMeta = document.getElementById("questionMeta");
+    const choicesList = document.getElementById("choicesList");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const checkBtn = document.getElementById("checkBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtn2 = document.getElementById("restartBtn2");
+
+    const quizCard = document.getElementById("quizCard");
+    const summaryCard = document.getElementById("summaryCard");
+    const summaryText = document.getElementById("summaryText");
+
+    function renderQuestion() {
+      answered = false;
+      feedbackBox.className = "feedback hidden";
+      feedbackBox.innerHTML = "";
+      nextBtn.classList.add("hidden");
+
+      const q = QUESTIONS[idx];
+      progressText.textContent = `Question ${idx + 1} of ${QUESTIONS.length}`;
+      scoreText.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      questionMeta.textContent = q.topic ? `Topic: ${q.topic}` : "";
+
+      // Build choices (radio buttons)
+      choicesList.innerHTML = "";
+      q.choices.forEach((choice, i) => {
+        const li = document.createElement("li");
+        const id = `q${idx}_c${i}`;
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" name="choice" id="${id}" value="${i}" />
+            ${choice}
+          </label>
+        `;
+        choicesList.appendChild(li);
+      });
+    }
+
+    function getSelectedIndex() {
+      const selected = document.querySelector('input[name="choice"]:checked');
+      return selected ? Number(selected.value) : null;
+    }
+
+    function lockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = true);
+    }
+
+    function unlockChoices() {
+      document.querySelectorAll('input[name="choice"]').forEach(el => el.disabled = false);
+    }
+
+    function showFeedback(isCorrect, q) {
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("ok", isCorrect);
+      feedbackBox.classList.toggle("bad", !isCorrect);
+
+      const correctText = q.choices[q.correctIndex];
+      feedbackBox.innerHTML = `
+        <strong>${isCorrect ? "Correct!" : "Not quite."}</strong>
+        <div class="explain">
+          ${isCorrect ? "" : `Correct answer: <strong>${correctText}</strong><br/>`}
+          ${q.explanation ? q.explanation : ""}
+        </div>
+      `;
+    }
+
+
+    // =========================
+    // Fireworks (perfect score)
+    // =========================
+    const fwCanvas = document.getElementById("fireworks");
+    const fwCtx = fwCanvas.getContext("2d");
+    let fwRunning = false;
+    let fwParticles = [];
+    let fwAnimId = null;
+
+    function resizeFireworks(){
+      const dpr = window.devicePixelRatio || 1;
+      fwCanvas.width = Math.floor(window.innerWidth * dpr);
+      fwCanvas.height = Math.floor(window.innerHeight * dpr);
+      fwCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    window.addEventListener("resize", () => {
+      if (fwRunning) resizeFireworks();
+    });
+
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+
+    function spawnBurst(x, y){
+      const count = Math.floor(rand(60, 120));
+      for (let i = 0; i < count; i++){
+        const angle = rand(0, Math.PI * 2);
+        const speed = rand(1.5, 6.0);
+        fwParticles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: rand(40, 90),
+          maxLife: 0, // set below
+          size: rand(1.2, 2.6),
+          hue: rand(0, 360)
+        });
+      }
+      // assign maxLife after creation so we can fade nicely
+      for (let p of fwParticles){
+        if (p.maxLife === 0) p.maxLife = p.life;
+      }
+    }
+
+    function tickFireworks(){
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      // Occasionally spawn a new burst
+      if (Math.random() < 0.08){
+        spawnBurst(rand(window.innerWidth * 0.15, window.innerWidth * 0.85),
+                  rand(window.innerHeight * 0.15, window.innerHeight * 0.55));
+      }
+
+      const gravity = 0.06;
+      const drag = 0.985;
+
+      fwParticles = fwParticles.filter(p => p.life > 0);
+      for (let p of fwParticles){
+        p.life -= 1;
+        p.vx *= drag;
+        p.vy = p.vy * drag + gravity;
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        const t = p.life / p.maxLife; // 1..0
+        const alpha = Math.max(0, Math.min(1, t));
+
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        fwCtx.fillStyle = `hsla(${p.hue}, 100%, 60%, ${alpha})`;
+        fwCtx.fill();
+      }
+
+      fwAnimId = requestAnimationFrame(tickFireworks);
+    }
+
+    function startFireworks(){
+      if (fwRunning) return;
+      fwRunning = true;
+      fwParticles = [];
+      fwCanvas.style.display = "block";
+      resizeFireworks();
+
+      // Kick off with a few bursts
+      for (let i = 0; i < 4; i++){
+        spawnBurst(rand(window.innerWidth * 0.2, window.innerWidth * 0.8),
+                  rand(window.innerHeight * 0.2, window.innerHeight * 0.55));
+      }
+
+      tickFireworks();
+
+      // Stop after ~6 seconds (keeps it fun, not annoying)
+      setTimeout(stopFireworks, 6000);
+    }
+
+    function stopFireworks(){
+      if (!fwRunning) return;
+      fwRunning = false;
+      if (fwAnimId) cancelAnimationFrame(fwAnimId);
+      fwAnimId = null;
+      fwParticles = [];
+      fwCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      fwCanvas.style.display = "none";
+    }
+
+
+    function finishQuiz() {
+      quizCard.classList.add("hidden");
+      summaryCard.classList.remove("hidden");
+      summaryText.textContent = `You scored ${score} out of ${QUESTIONS.length}.`;
+      if (score === QUESTIONS.length) startFireworks();
+    }
+
+    function restartQuiz() {
+      idx = 0;
+      score = 0;
+      answered = false;
+      summaryCard.classList.add("hidden");
+      quizCard.classList.remove("hidden");
+      unlockChoices();
+      renderQuestion();
+    }
+
+    checkBtn.addEventListener("click", () => {
+      if (answered) return;
+
+      const selectedIndex = getSelectedIndex();
+      if (selectedIndex === null) {
+        feedbackBox.className = "feedback bad";
+        feedbackBox.textContent = "Please select an answer before checking.";
+        return;
+      }
+
+      const q = QUESTIONS[idx];
+      const isCorrect = selectedIndex === q.correctIndex;
+
+      if (isCorrect) score += 1;
+      answered = true;
+
+      lockChoices();
+      showFeedback(isCorrect, q);
+      scoreText.textContent = `Score: ${score}`;
+      nextBtn.classList.remove("hidden");
+    });
+
+    nextBtn.addEventListener("click", () => {
+      idx += 1;
+      if (idx >= QUESTIONS.length) {
+        finishQuiz();
+      } else {
+        unlockChoices();
+        renderQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtn2.addEventListener("click", restartQuiz);
+
+    // Start
+    renderQuestion();
+  </script>
+</body>
+</html>
